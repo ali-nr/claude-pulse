@@ -11,11 +11,11 @@ export function renderName(
 		return { text: "" };
 	}
 
-	// Special logo mode: ❤♠❤ with colors
-	if (config.custom === "logo" || config.custom === "❤♠❤") {
+	// Special logo mode: ❤♣♣❤ with colors
+	if (config.custom === "logo" || config.custom === "❤♣♣❤") {
 		const heart = `${theme.red}❤${theme.reset}`;
-		const spade = `${theme.mauve}♠${theme.reset}`;
-		return { text: `${heart}${spade}${heart}` };
+		const club = `${theme.mauve}♣${theme.reset}`;
+		return { text: `${heart}${club}${club}${heart}` };
 	}
 
 	// Use custom name or derive from project directory
