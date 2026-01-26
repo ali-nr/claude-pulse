@@ -1,0 +1,43 @@
+{
+	"name": "claude-pulse",
+	"version": "0.0.1",
+	"description": "A slick, reactive statusline for Claude Code",
+	"type": "module",
+	"bin": {
+		"claude-pulse": "./dist/cli.js"
+	},
+	"scripts": {
+		"dev": "bun run src/cli.ts",
+		"build": "bun build src/cli.ts --outdir dist --target node",
+		"build:binary": "bun build src/cli.ts --compile --outfile claude-pulse",
+		"test": "bun test",
+		"lint": "bunx biome check .",
+		"lint:fix": "bunx biome check --write .",
+		"setup": "bun run src/setup.ts"
+	},
+	"keywords": [
+		"claude",
+		"claude-code",
+		"statusline",
+		"cli",
+		"terminal"
+	],
+	"author": "Alireza",
+	"license": "MIT",
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.12",
+		"@types/bun": "latest",
+		"@types/node": "^25.0.10",
+		"typescript": "^5.7.0"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alireza/claude-pulse"
+	},
+	"dependencies": {
+		"zod": "^4.3.6"
+	}
+}
