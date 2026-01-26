@@ -11,6 +11,13 @@ export function renderName(
 		return { text: "" };
 	}
 
+	// Special logo mode: ❤♠❤ with colors
+	if (config.custom === "logo" || config.custom === "❤♠❤") {
+		const heart = `${theme.red}❤${theme.reset}`;
+		const spade = `${theme.mauve}♠${theme.reset}`;
+		return { text: `${heart}${spade}${heart}` };
+	}
+
 	// Use custom name or derive from project directory
 	const projectDir = input.workspace?.project_dir ?? input.cwd ?? "";
 	const name = config.custom ?? basename(projectDir);
