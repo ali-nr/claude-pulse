@@ -11,10 +11,10 @@ export function renderName(
 		return { text: "" };
 	}
 
-	// Special logo mode: ❤♣♣❤ with colors
-	if (config.custom === "logo" || config.custom === "❤♣♣❤") {
-		const heart = `${theme.red}❤${theme.reset}`;
-		const club = `${theme.mauve}♣${theme.reset}`;
+	// Special logo mode: ❤️♣️♣️❤️ with Claude colors
+	if (config.custom === "logo" || config.custom === "❤♣♣❤" || config.custom === "❤️♣️♣️❤️") {
+		const heart = `${theme.peach}❤️${theme.reset}`;
+		const club = `${theme.mauve}♣️${theme.reset}`;
 		return { text: `${heart}${club}${club}${heart}` };
 	}
 
