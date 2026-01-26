@@ -89,18 +89,19 @@ export function renderContext(
 			const convBlocks = Math.round(convPercent / 10);
 			const emptyBlocks = Math.max(0, 10 - systemBlocks - convBlocks);
 
-			// System in dim (◉), conversation in bright (●), empty (○)
+			// System in yellow (◉), conversation in bright (●), empty (○)
 			const systemBar =
-				systemBlocks > 0 ? `${theme.overlay0}${"◉".repeat(systemBlocks)}${theme.reset}` : "";
+				systemBlocks > 0 ? `${theme.yellow}${"◉".repeat(systemBlocks)}${theme.reset}` : "";
 			const convBar = convBlocks > 0 ? `${color}${"●".repeat(convBlocks)}${theme.reset}` : "";
 			const emptyBar = "○".repeat(emptyBlocks);
 
 			const bar = `${systemBar}${convBar}${emptyBar}`;
 
-			// Build labels: sys:Xk msg:Yk free:Zk
-			const sysLabel = `${theme.overlay0}sys:${formatTokens(systemTokens)}${theme.reset}`;
+			// Build labels: sys:Xk msg:Yk free:Zk (percentage)
+			const freePercent = Math.round((freeTokens / windowSize) * 100);
+			const sysLabel = `${theme.yellow}sys:${formatTokens(systemTokens)}${theme.reset}`;
 			const msgLabel = `${color}msg:${formatTokens(conversationTokens)}${theme.reset}`;
-			const freeLabel = `${theme.subtext0}free:${formatTokens(freeTokens)}${theme.reset}`;
+			const freeLabel = `${theme.green}free:${formatTokens(freeTokens)} (${freePercent}%)${theme.reset}`;
 
 			display = `${bar} ${sysLabel} ${msgLabel} ${freeLabel}`;
 		} else {
