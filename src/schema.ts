@@ -187,6 +187,14 @@ export const SessionConfigSchema = z.object({
 
 export type SessionConfig = z.infer<typeof SessionConfigSchema>;
 
+export const ThinkingConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	label: z.string().optional(),
+	icon: z.string().optional(),
+});
+
+export type ThinkingConfig = z.infer<typeof ThinkingConfigSchema>;
+
 export type NameConfig = z.infer<typeof NameConfigSchema>;
 
 export const ComponentConfigsSchema = z.object({
@@ -200,6 +208,7 @@ export const ComponentConfigsSchema = z.object({
 	system: SystemConfigSchema.optional(),
 	name: NameConfigSchema.optional(),
 	session: SessionConfigSchema.optional(),
+	thinking: ThinkingConfigSchema.optional(),
 	outputStyle: z
 		.object({ enabled: z.boolean().optional(), label: z.string().optional() })
 		.optional(),

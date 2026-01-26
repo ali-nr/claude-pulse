@@ -8,5 +8,6 @@ export { renderName } from "./name";
 export { renderOutputStyle } from "./output-style";
 export { renderSession } from "./session";
 export { renderSystem } from "./system";
+export { renderThinking } from "./thinking";
 export { renderTier } from "./tier";
 export { renderTime } from "./time";

@@ -22,20 +22,7 @@ export function renderContext(
 
 	const ctx = input.context_window;
 	const thresholds = config.thresholds ?? { warn: 70, critical: 85, danger: 95 };
-
-	// Calculate used percentage from actual token data if available
-	// This fixes the 0% issue at session start when system tokens are loaded
-	let usedPercent = ctx?.used_percentage ?? 0;
-	if (usedPercent === 0 && ctx?.current_usage && ctx?.context_window_size) {
-		const totalTokens =
-			(ctx.current_usage.cache_creation_input_tokens || 0) +
-			(ctx.current_usage.cache_read_input_tokens || 0) +
-			(ctx.current_usage.input_tokens || 0) +
-			(ctx.current_usage.output_tokens || 0);
-		if (totalTokens > 0) {
-			usedPercent = (totalTokens / ctx.context_window_size) * 100;
-		}
-	}
+	const usedPercent = ctx?.used_percentage ?? 0;
 
 	// Determine color based on usage
 	let color = theme.green;

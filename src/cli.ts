@@ -12,6 +12,7 @@ import {
 	renderSession,
 	renderStatus,
 	renderSystem,
+	renderThinking,
 	renderTier,
 	renderTime,
 } from "./components";
@@ -118,6 +119,8 @@ function renderComponent(
 			return renderBranch(config.components.branch ?? {}, theme);
 		case "status":
 			return renderStatus(config.components.status ?? {}, theme);
+		case "thinking":
+			return renderThinking(config.components.thinking ?? {}, theme);
 		default:
 			return { text: "" };
 	}
