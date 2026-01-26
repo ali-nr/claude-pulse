@@ -9,6 +9,7 @@ import {
 	renderModel,
 	renderName,
 	renderOutputStyle,
+	renderSession,
 	renderStatus,
 	renderSystem,
 	renderTier,
@@ -109,6 +110,8 @@ function renderComponent(
 			return renderTime(config.components.time ?? {}, theme);
 		case "system":
 			return renderSystem(input, config.components.system ?? {}, theme);
+		case "session":
+			return renderSession(input, config.components.session ?? {}, theme);
 		case "outputStyle":
 			return renderOutputStyle(input, config.components.outputStyle ?? {}, theme);
 		case "branch":

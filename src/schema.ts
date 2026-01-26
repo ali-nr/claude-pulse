@@ -178,6 +178,15 @@ export const NameConfigSchema = z.object({
 	custom: z.string().optional(),
 });
 
+export const SessionConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	showDuration: z.boolean().optional(),
+	showId: z.boolean().optional(),
+	label: z.string().optional(),
+});
+
+export type SessionConfig = z.infer<typeof SessionConfigSchema>;
+
 export type NameConfig = z.infer<typeof NameConfigSchema>;
 
 export const ComponentConfigsSchema = z.object({
@@ -190,6 +199,7 @@ export const ComponentConfigsSchema = z.object({
 	time: TimeConfigSchema.optional(),
 	system: SystemConfigSchema.optional(),
 	name: NameConfigSchema.optional(),
+	session: SessionConfigSchema.optional(),
 	outputStyle: z
 		.object({ enabled: z.boolean().optional(), label: z.string().optional() })
 		.optional(),
