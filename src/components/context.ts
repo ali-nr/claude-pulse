@@ -60,56 +60,22 @@ export function renderContext(
 		const windowSize = ctx.context_window_size;
 		display = `${formatTokens(totalUsed)}/${formatTokens(windowSize)} (${Math.round(usedPercent)}%)`;
 	} else if (style === "bar" || style === "both") {
-		// Check if we should show two-tone bar with system usage
-		if (config.showSystemUsage && ctx?.current_usage) {
-			const windowSize = ctx.context_window_size || 1;
+		const windowSize = ctx?.context_window_size || 200000;
+		const totalUsed = (ctx?.total_input_tokens || 0) + (ctx?.total_output_tokens || 0);
+		const freeTokens = Math.max(0, windowSize - totalUsed);
+		const freePercent = ctx?.remaining_percentage ?? Math.round((freeTokens / windowSize) * 100);
 
-			// System/cache tokens = cache_read (system prompt, tools, MCP, memory, skills)
-			// These get cached and reused across requests
-			const systemTokens =
-				(ctx.current_usage.cache_creation_input_tokens || 0) +
-				(ctx.current_usage.cache_read_input_tokens || 0);
+		// Build bar (10 segments)
+		const filled = Math.round(usedPercent / 10);
+		const empty = 10 - filled;
+		const bar = `${color}${"●".repeat(filled)}${theme.reset}${"○".repeat(empty)}`;
 
-			// Conversation tokens (non-cached input + output)
-			const conversationTokens =
-				(ctx.current_usage.input_tokens || 0) + (ctx.current_usage.output_tokens || 0);
+		// Build labels: used:Xk free:Yk (Z%)
+		const usedLabel = `${color}used:${formatTokens(totalUsed)}${theme.reset}`;
+		const freeLabel = `${theme.green}free:${formatTokens(freeTokens)} (${Math.round(freePercent)}%)${theme.reset}`;
 
-			// Total used = system + conversation
-			const actualUsed = systemTokens + conversationTokens;
-
-			// Free space
-			const freeTokens = Math.max(0, windowSize - actualUsed);
-
-			// Calculate percentages of the context window
-			const systemPercent = (systemTokens / windowSize) * 100;
-			const convPercent = (conversationTokens / windowSize) * 100;
-
-			// Build two-tone bar (10 segments)
-			const systemBlocks = Math.round(systemPercent / 10);
-			const convBlocks = Math.round(convPercent / 10);
-			const emptyBlocks = Math.max(0, 10 - systemBlocks - convBlocks);
-
-			// System in yellow (◉), conversation in bright (●), empty (○)
-			const systemBar =
-				systemBlocks > 0 ? `${theme.yellow}${"◉".repeat(systemBlocks)}${theme.reset}` : "";
-			const convBar = convBlocks > 0 ? `${color}${"●".repeat(convBlocks)}${theme.reset}` : "";
-			const emptyBar = "○".repeat(emptyBlocks);
-
-			const bar = `${systemBar}${convBar}${emptyBar}`;
-
-			// Build labels: sys:Xk msg:Yk free:Zk (percentage)
-			const freePercent = Math.round((freeTokens / windowSize) * 100);
-			const sysLabel = `${theme.yellow}sys:${formatTokens(systemTokens)}${theme.reset}`;
-			const msgLabel = `${color}msg:${formatTokens(conversationTokens)}${theme.reset}`;
-			const freeLabel = `${theme.green}free:${formatTokens(freeTokens)} (${freePercent}%)${theme.reset}`;
-
-			display = `${bar} ${sysLabel} ${msgLabel} ${freeLabel}`;
-		} else {
-			const filled = Math.round(usedPercent / 10);
-			const empty = 10 - filled;
-			const bar = "●".repeat(filled) + "○".repeat(empty);
-			display = style === "both" ? `${bar} ${Math.round(usedPercent)}%` : bar;
-		}
+		display =
+			style === "both" ? `${bar} ${usedLabel} ${freeLabel}` : `${bar} ${Math.round(usedPercent)}%`;
 	} else {
 		display = `${Math.round(usedPercent)}%`;
 	}
