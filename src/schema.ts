@@ -96,7 +96,7 @@ export type ModelConfig = z.infer<typeof ModelConfigSchema>;
 export const ContextConfigSchema = z.object({
 	enabled: z.boolean().optional(),
 	label: z.string().optional(),
-	style: z.enum(["bar", "percent", "both", "detailed"]).optional(),
+	style: z.enum(["bar", "percent", "both", "detailed", "compact"]).optional(),
 	showRate: z.boolean().optional(),
 	showCompactHint: z.boolean().optional(),
 	showTokens: z.boolean().optional(),
@@ -142,6 +142,7 @@ export const McpConfigSchema = z.object({
 		})
 		.optional(),
 	maxDisplay: z.number().optional(),
+	showOnlyProblems: z.boolean().optional(),
 });
 
 export type McpConfig = z.infer<typeof McpConfigSchema>;
@@ -189,6 +190,35 @@ export type SessionConfig = z.infer<typeof SessionConfigSchema>;
 
 export type NameConfig = z.infer<typeof NameConfigSchema>;
 
+export const LinesChangedConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	label: z.string().optional(),
+	showAdded: z.boolean().optional(),
+	showRemoved: z.boolean().optional(),
+	showNet: z.boolean().optional(),
+});
+
+export type LinesChangedConfig = z.infer<typeof LinesChangedConfigSchema>;
+
+export const HooksConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	label: z.string().optional(),
+	showCount: z.boolean().optional(),
+	showNames: z.boolean().optional(),
+	maxDisplay: z.number().optional(),
+});
+
+export type HooksConfig = z.infer<typeof HooksConfigSchema>;
+
+export const CacheConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	label: z.string().optional(),
+	showHitRate: z.boolean().optional(),
+	showTokensSaved: z.boolean().optional(),
+});
+
+export type CacheConfig = z.infer<typeof CacheConfigSchema>;
+
 export const ComponentConfigsSchema = z.object({
 	tier: TierConfigSchema.optional(),
 	model: ModelConfigSchema.optional(),
@@ -205,6 +235,9 @@ export const ComponentConfigsSchema = z.object({
 		.optional(),
 	branch: z.object({ enabled: z.boolean().optional(), label: z.string().optional() }).optional(),
 	status: z.object({ enabled: z.boolean().optional() }).optional(),
+	linesChanged: LinesChangedConfigSchema.optional(),
+	hooks: HooksConfigSchema.optional(),
+	cache: CacheConfigSchema.optional(),
 });
 
 export type ComponentConfigs = z.infer<typeof ComponentConfigsSchema>;

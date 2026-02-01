@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { basename } from "node:path";
 import type { ClaudeStatusInput, ComponentOutput, CwdConfig } from "../schema";
 import type { Theme } from "../themes/catppuccin";
+import { getPulseColor } from "./name";
 
 export function renderCwd(
 	input: ClaudeStatusInput,
@@ -53,10 +54,11 @@ export function renderCwd(
 		}
 	}
 
-	const icon = showIcon ? "📁 " : "";
+	const icon = showIcon ? "▶ " : "";
 	const labelStr = label ? `${label} ` : "";
 
-	const text = `${theme.text}${theme.bold}${icon}${labelStr}${displayPath}${theme.reset}`;
+	const cwdColor = getPulseColor(theme, 0.15);
+	const text = `${cwdColor}${theme.bold}${icon}${labelStr}${displayPath}${theme.reset}`;
 
 	return { text };
 }

@@ -39,20 +39,20 @@ export function renderSession(
 	// Session duration from total_duration_ms
 	if (config.showDuration !== false && input.cost?.total_duration_ms) {
 		const duration = formatDuration(input.cost.total_duration_ms);
-		parts.push(`${theme.blue}${duration}${theme.reset}`);
+		parts.push(`${theme.sapphire}${duration}${theme.reset}`);
 	}
 
 	// Session ID (truncated)
 	if (config.showId && input.session_id) {
 		const shortId = input.session_id.slice(0, 8);
-		parts.push(`${theme.overlay0}#${shortId}${theme.reset}`);
+		parts.push(`${theme.sapphire}#${shortId}${theme.reset}`);
 	}
 
 	if (parts.length === 0) {
 		return { text: "" };
 	}
 
-	const labelPart = label ? `${theme.subtext0}${label}:${theme.reset} ` : "";
+	const labelPart = label ? `${theme.sapphire}${label}:${theme.reset} ` : "";
 	const text = `${labelPart}${parts.join(" ")}`;
 	return { text };
 }

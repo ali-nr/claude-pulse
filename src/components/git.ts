@@ -2,9 +2,16 @@ import { execSync } from "node:child_process";
 import type { ComponentConfigs, ComponentOutput } from "../schema";
 import type { Theme } from "../themes/catppuccin";
 
+interface StatusLines {
+	added: number;
+	modified: number;
+	deleted: number;
+}
+
 interface GitCache {
 	branch: string;
 	status: string;
+	statusLines: StatusLines;
 	time: number;
 }
 
@@ -24,7 +31,9 @@ export function renderBranch(
 		return { text: "" };
 	}
 
-	const text = `${theme.mauve}${git.branch}${theme.reset}`;
+	const label = config.label ?? "";
+	const labelStr = label ? `${theme.teal}${label} ${theme.reset}` : "";
+	const text = `${labelStr}${theme.teal}${git.branch}${theme.reset}`;
 	return { text };
 }
 
@@ -41,18 +50,26 @@ export function renderStatus(
 		return { text: "" };
 	}
 
-	const text = `${theme.green}${git.status}${theme.reset}`;
+	// Build labeled status parts
+	const lines = git.statusLines;
+	const parts: string[] = [];
+	if (lines.added > 0) parts.push(`${theme.green}+${lines.added} new${theme.reset}`);
+	if (lines.modified > 0) parts.push(`${theme.yellow}~${lines.modified} mod${theme.reset}`);
+	if (lines.deleted > 0) parts.push(`${theme.red}-${lines.deleted} del${theme.reset}`);
+
+	const text = parts.join(" ");
 	return { text };
 }
 
-function getGitInfo(): { branch: string; status: string } {
+function getGitInfo(): { branch: string; status: string; statusLines: StatusLines } {
 	const now = Date.now();
 	if (cache && now - cache.time < CACHE_TTL) {
-		return { branch: cache.branch, status: cache.status };
+		return { branch: cache.branch, status: cache.status, statusLines: cache.statusLines };
 	}
 
 	let branch = "";
 	let status = "";
+	const statusLines: StatusLines = { added: 0, modified: 0, deleted: 0 };
 
 	try {
 		branch = execSync("git branch --show-current 2>/dev/null", {
@@ -71,21 +88,18 @@ function getGitInfo(): { branch: string; status: string } {
 			});
 
 			const lines = porcelain.trim().split("\n").filter(Boolean);
-			let added = 0;
-			let deleted = 0;
-			let modified = 0;
 
 			for (const line of lines) {
 				const code = line.substring(0, 2);
-				if (code.includes("A") || code.includes("?")) added++;
-				else if (code.includes("D")) deleted++;
-				else if (code.includes("M")) modified++;
+				if (code.includes("A") || code.includes("?")) statusLines.added++;
+				else if (code.includes("D")) statusLines.deleted++;
+				else if (code.includes("M")) statusLines.modified++;
 			}
 
 			const parts: string[] = [];
-			if (added > 0) parts.push(`+${added}`);
-			if (deleted > 0) parts.push(`-${deleted}`);
-			if (modified > 0) parts.push(`~${modified}`);
+			if (statusLines.added > 0) parts.push(`+${statusLines.added}`);
+			if (statusLines.deleted > 0) parts.push(`-${statusLines.deleted}`);
+			if (statusLines.modified > 0) parts.push(`~${statusLines.modified}`);
 
 			status = parts.join(" ");
 		} catch {
@@ -93,6 +107,6 @@ function getGitInfo(): { branch: string; status: string } {
 		}
 	}
 
-	cache = { branch, status, time: now };
-	return { branch, status };
+	cache = { branch, status, statusLines, time: now };
+	return { branch, status, statusLines };
 }

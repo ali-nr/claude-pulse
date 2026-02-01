@@ -3,45 +3,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { DEFAULT_CONFIG } from "./config";
 
 const CLAUDE_SETTINGS_PATH = join(homedir(), ".claude", "settings.json");
 const CONFIG_DIR = join(homedir(), ".config", "claude-pulse");
 const CONFIG_PATH = join(CONFIG_DIR, "config.json");
-
-const DEFAULT_CONFIG = {
-	theme: "catppuccin",
-	lines: [
-		{
-			enabled: true,
-			components: ["tier", "model", "context", "cost"],
-			separator: " │ ",
-		},
-		{
-			enabled: true,
-			components: ["mcp"],
-			separator: " ",
-		},
-		{
-			enabled: true,
-			components: ["outputStyle", "branch", "status"],
-			separator: " │ ",
-		},
-	],
-	components: {
-		context: {
-			style: "bar",
-			showRate: true,
-			showCompactHint: true,
-		},
-		cost: {
-			showBurnRate: true,
-		},
-		mcp: {
-			showNames: true,
-			maxDisplay: 4,
-		},
-	},
-};
 
 async function main() {
 	console.log("🚀 Setting up claude-pulse...\n");
@@ -85,6 +51,7 @@ async function main() {
 		settings.statusLine = {
 			type: "command",
 			command,
+			padding: 0,
 		};
 
 		writeFileSync(CLAUDE_SETTINGS_PATH, JSON.stringify(settings, null, 2));

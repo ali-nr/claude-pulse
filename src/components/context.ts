@@ -41,7 +41,9 @@ export function renderContext(
 	const style = config.style ?? "bar";
 
 	let display: string;
-	if (style === "detailed" && ctx) {
+	if (style === "compact") {
+		display = `${Math.round(usedPercent)}%`;
+	} else if (style === "detailed" && ctx) {
 		// Detailed: show tokens and percentage
 		const totalUsed = ctx.total_input_tokens + ctx.total_output_tokens;
 		const windowSize = ctx.context_window_size;
@@ -72,7 +74,9 @@ export function renderContext(
 	if (config.showTokens && ctx) {
 		const inTok = formatTokens(ctx.total_input_tokens);
 		const outTok = formatTokens(ctx.total_output_tokens);
-		tokenInfo = ` [in:${inTok} out:${outTok}]`;
+		const cacheRead = ctx.current_usage?.cache_read_input_tokens ?? 0;
+		const cacheStr = cacheRead > 0 ? ` ⟳${formatTokens(cacheRead)}` : "";
+		tokenInfo = ` ${theme.sky}↓${inTok}${theme.reset} ${theme.peach}↑${outTok}${theme.reset}${cacheStr ? `${theme.teal}${cacheStr}${theme.reset}` : ""}`;
 	}
 
 	// Calculate rate if enabled
@@ -96,7 +100,8 @@ export function renderContext(
 		hint = " 💡/compact";
 	}
 
-	const text = `${color}${label} ${display}${tokenInfo}${rateStr}${indicator}${hint}${theme.reset}`;
+	const labelStr = label ? `${label} ` : "";
+	const text = `${color}${labelStr}${display}${tokenInfo}${rateStr}${indicator}${hint}${theme.reset}`;
 
 	return { text, action: "/context" };
 }

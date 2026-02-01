@@ -1,4 +1,7 @@
 import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { ComponentOutput, McpConfig, McpServer } from "../schema";
 import type { Theme } from "../themes/catppuccin";
 
@@ -11,20 +14,51 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		return { text: "" };
 	}
 
-	const label = config.label ?? "MCP";
+	const label = config.label ?? "🧩 MCP";
 	const icons = config.icons ?? {
 		connected: "✓",
 		disconnected: "✗",
 		disabled: "○",
-		error: "!",
+		error: "▲",
 	};
 	const maxDisplay = config.maxDisplay ?? 4;
 
 	const servers = getMcpServers();
 	const connectedCount = servers.filter((s) => s.status === "connected").length;
+	const showOnlyProblems = config.showOnlyProblems ?? false;
+
+	// Conditional visibility: hide when all servers are healthy
+	if (showOnlyProblems) {
+		const problemServers = servers.filter(
+			(s) => s.status === "disconnected" || s.status === "error" || s.status === "disabled",
+		);
+
+		if (problemServers.length === 0) {
+			return { text: "" };
+		}
+
+		const problemParts = problemServers.map((server) => {
+			let icon: string;
+			let serverColor: string;
+			if (server.status === "disabled") {
+				icon = icons.disabled;
+				serverColor = theme.overlay0;
+			} else if (server.status === "disconnected") {
+				icon = icons.disconnected;
+				serverColor = theme.red;
+			} else {
+				icon = icons.error;
+				serverColor = theme.yellow;
+			}
+			return `${serverColor}${server.name} ${icon}${theme.reset}`;
+		});
+
+		const text = `${theme.yellow}⚠ ${label}:${theme.reset} ${problemParts.join("  ")}`;
+		return { text, action: "/mcp" };
+	}
 
 	if (servers.length === 0) {
-		const text = `${theme.overlay0}${label}: 0${theme.reset}`;
+		const text = `${theme.sky}${label} ${theme.overlay0}0${theme.reset}`;
 		return { text, action: "/mcp" };
 	}
 
@@ -59,7 +93,7 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 
 	let serverStr = serverParts.join("  ");
 	if (remaining > 0) {
-		serverStr += `  ${theme.overlay0}+${remaining} more${theme.reset}`;
+		serverStr += `  ${theme.sky}+${remaining} more${theme.reset}`;
 	}
 
 	// Show count in label
@@ -67,11 +101,11 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 
 	// If showNames is false, just show compact count
 	if (config.showNames === false) {
-		const text = `${theme.text}${label} ${theme.green}${countStr}${theme.reset}`;
+		const text = `${theme.sky}${label} ${theme.green}${countStr}${theme.reset}`;
 		return { text, action: "/mcp" };
 	}
 
-	const text = `${theme.text}${label} ${theme.green}${countStr}${theme.reset}: ${serverStr}`;
+	const text = `${theme.sky}${label} ${theme.green}${countStr}${theme.reset}: ${serverStr}`;
 
 	return { text, action: "/mcp" };
 }
@@ -89,6 +123,17 @@ function getMcpServers(): McpServer[] {
 		});
 
 		cachedServers = parseMcpOutput(output);
+
+		// Cross-reference with ~/.claude.json to detect disabled servers
+		// claude mcp list doesn't reflect runtime disabled state
+		const disabledNames = getDisabledMcpServers();
+		if (disabledNames.length > 0) {
+			for (const server of cachedServers) {
+				if (disabledNames.includes(server.name)) {
+					server.status = "disabled";
+				}
+			}
+		}
 	} catch {
 		cachedServers = [];
 	}
@@ -97,15 +142,51 @@ function getMcpServers(): McpServer[] {
 	return cachedServers;
 }
 
+interface ClaudeJsonProject {
+	disabledMcpServers?: string[];
+}
+
+interface ClaudeJson {
+	projects?: Record<string, ClaudeJsonProject>;
+}
+
+function getDisabledMcpServers(): string[] {
+	try {
+		const claudeJsonPath = join(homedir(), ".claude.json");
+		if (!existsSync(claudeJsonPath)) return [];
+
+		const content = readFileSync(claudeJsonPath, "utf-8");
+		const data = JSON.parse(content) as ClaudeJson;
+		if (!data.projects) return [];
+
+		// Find the most specific (longest) matching project path
+		const cwd = process.cwd();
+		let bestMatch = "";
+		let bestDisabled: string[] = [];
+
+		for (const [projectPath, projectData] of Object.entries(data.projects)) {
+			if (
+				cwd.startsWith(projectPath) &&
+				projectPath.length > bestMatch.length &&
+				projectData?.disabledMcpServers
+			) {
+				bestMatch = projectPath;
+				bestDisabled = projectData.disabledMcpServers;
+			}
+		}
+
+		return bestDisabled;
+	} catch {
+		return [];
+	}
+}
+
 function parseMcpOutput(output: string): McpServer[] {
 	const servers: McpServer[] = [];
 	const lines = output.split("\n");
 
 	for (const line of lines) {
 		// New format: "context7: npx -y @upstash/context7-mcp - ✓ Connected"
-		// or "deepwiki: https://mcp.deepwiki.com/mcp (HTTP) - ✓ Connected"
-		// or "server-name: command - ✗ Disconnected"
-		// or "server-name: command - ○ Disabled"
 		const newFormatMatch = line.match(
 			/^(\S+):\s+(.+?)\s+-\s+([✓✔✗✘○◯!])\s*(Connected|Disconnected|Disabled|Error)/i,
 		);

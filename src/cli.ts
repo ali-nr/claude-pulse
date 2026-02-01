@@ -2,9 +2,12 @@
 
 import {
 	renderBranch,
+	renderCache,
 	renderContext,
 	renderCost,
 	renderCwd,
+	renderHooks,
+	renderLinesChanged,
 	renderMcp,
 	renderModel,
 	renderName,
@@ -67,7 +70,7 @@ Configuration:
 		if (lineConfig.enabled === false) continue;
 
 		const parts: string[] = [];
-		const separator = lineConfig.separator ?? " │ ";
+		const separator = lineConfig.separator ?? ` ${theme.overlay2}│${theme.reset} `;
 
 		for (const componentName of lineConfig.components) {
 			const output = renderComponent(componentName, input, config, theme);
@@ -118,6 +121,12 @@ function renderComponent(
 			return renderBranch(config.components.branch ?? {}, theme);
 		case "status":
 			return renderStatus(config.components.status ?? {}, theme);
+		case "linesChanged":
+			return renderLinesChanged(input, config.components.linesChanged ?? {}, theme);
+		case "hooks":
+			return renderHooks(config.components.hooks ?? {}, theme);
+		case "cache":
+			return renderCache(input, config.components.cache ?? {}, theme);
 		default:
 			return { text: "" };
 	}

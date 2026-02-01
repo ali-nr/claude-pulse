@@ -1,7 +1,10 @@
+export { renderCache } from "./cache";
 export { renderContext } from "./context";
 export { renderCost } from "./cost";
 export { renderCwd } from "./cwd";
 export { renderBranch, renderStatus } from "./git";
+export { renderHooks } from "./hooks";
+export { renderLinesChanged } from "./lines-changed";
 export { renderMcp } from "./mcp";
 export { renderModel } from "./model";
 export { renderName } from "./name";

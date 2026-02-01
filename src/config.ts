@@ -8,57 +8,68 @@ const CONFIG_PATHS = [
 	join(homedir(), ".claude-pulse.json"),
 ];
 
-const DEFAULT_CONFIG: PulseConfig = {
+export const DEFAULT_CONFIG: PulseConfig = {
 	theme: "catppuccin",
 	lines: [
 		{
 			enabled: true,
-			components: ["tier", "model", "context", "cost"],
-			separator: " │ ",
-		},
-		{
-			enabled: true,
-			components: ["mcp"],
+			components: ["model", "context", "cost", "branch", "session"],
 			separator: " ",
 		},
 		{
 			enabled: true,
-			components: ["cwd", "branch", "status"],
+			components: ["mcp", "linesChanged", "hooks"],
+			separator: " │ ",
+		},
+		{
+			enabled: false,
+			components: ["cache", "cwd"],
 			separator: " │ ",
 		},
 	],
 	components: {
 		tier: {
-			enabled: true,
+			enabled: false,
 			labels: { pro: "PRO", max: "MAX", api: "API" },
 		},
 		model: {
 			enabled: true,
-			icons: { opus: "🧠", sonnet: "🎵", haiku: "⚡" },
+			showIcon: false,
 		},
 		context: {
 			enabled: true,
-			label: "CTX",
-			style: "detailed",
-			showRate: true,
+			label: "",
+			style: "compact",
+			showRate: false,
 			showTokens: false,
-			showCompactHint: true,
+			showCompactHint: false,
 			thresholds: { warn: 70, critical: 85, danger: 95 },
 		},
 		cost: {
 			enabled: true,
 			label: "$",
-			showBurnRate: true,
+			showBurnRate: false,
 			showProjection: false,
-			showBudgetRemaining: true,
+		},
+		session: {
+			enabled: true,
+			showDuration: true,
+			label: "",
 		},
 		mcp: {
 			enabled: true,
 			label: "MCP",
 			showNames: true,
+			showOnlyProblems: true,
 			style: "auto",
 			icons: { connected: "✓", disconnected: "✗", disabled: "○", error: "!" },
 			maxDisplay: 4,
+		},
+		branch: {
+			enabled: true,
+		},
+		status: {
+			enabled: true,
 		},
 		cwd: {
 			enabled: true,
@@ -66,14 +77,13 @@ const DEFAULT_CONFIG: PulseConfig = {
 			maxLength: 30,
 			showIcon: true,
 		},
-		outputStyle: {
-			enabled: true,
-			label: "style",
-		},
-		branch: {
+		linesChanged: {
 			enabled: true,
 		},
-		status: {
+		hooks: {
+			enabled: true,
+		},
+		cache: {
 			enabled: true,
 		},
 	},

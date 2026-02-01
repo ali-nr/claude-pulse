@@ -22,15 +22,15 @@ export function renderModel(
 	if (modelName.includes("opus")) {
 		icon = icons.opus;
 		color = theme.mauve;
-		modelLabel = displayName || "Opus";
+		modelLabel = "Opus";
 	} else if (modelName.includes("sonnet")) {
 		icon = icons.sonnet;
 		color = theme.blue;
-		modelLabel = displayName || "Sonnet";
+		modelLabel = "Sonnet";
 	} else if (modelName.includes("haiku")) {
 		icon = icons.haiku;
 		color = theme.green;
-		modelLabel = displayName || "Haiku";
+		modelLabel = "Haiku";
 	}
 
 	// Use config label if set, otherwise use model's display name
