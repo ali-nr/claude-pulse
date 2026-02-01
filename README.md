@@ -1,57 +1,87 @@
 # claude-pulse
 
-A slick, reactive statusline for Claude Code.
+A customizable, real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-![Demo](assets/demo.gif)
+See your tokens, cost, context usage, MCP servers, git status, and hooks — all at a glance while you work.
 
-## Features
+```
+♥ pulse ▶ ~/dev/my-project
+⎇ main │ +3 new ~5 mod
+◆ MAX │ Opus │ CTX 42% ↓85.0k ↑15.0k ⟳45.0k │ $2.37 ($4.74/hr) │ 30m
+⬢ MCP 3/3: context7 ✓  deepwiki ✓  chrome-devtools ✓
+⚡Hooks 4 Submit:2 timezone-context,best-practices Post:1 lint-check Start:1 auto-context
+```
 
-- **Tier detection** - Shows PRO/MAX based on your subscription
-- **Smart context** - Visual bar with usage rate and compact hints
-- **Cost tracking** - Session cost with burn rate ($/hr)
-- **MCP status** - Individual server names with connection status
-- **Git integration** - Branch and file status
-- **Output style** - Current output mode indicator
-- **Themeable** - Catppuccin theme built-in
+## Quick Start
 
-## Installation
+### 1. Install
 
 ```bash
-# npm
-npm install -g claude-pulse
-
-# bun
-bun add -g claude-pulse
-
-# From source
-git clone https://github.com/alireza/claude-pulse
+# Clone and build
+git clone https://github.com/ali-nr/claude-pulse.git
 cd claude-pulse
 bun install
-bun run build:binary
+bun run build
 ```
 
-## Setup
+### 2. Configure Claude Code
 
-After installation, configure Claude Code to use claude-pulse:
-
-```bash
-claude-pulse setup
-```
-
-Or manually add to your Claude Code settings (`~/.claude/settings.json`):
+Add to your Claude Code settings (`~/.claude/settings.json`):
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "claude-pulse"
+    "command": "node /path/to/claude-pulse/dist/cli.js"
   }
 }
 ```
 
+Replace `/path/to/claude-pulse` with the actual path where you cloned the repo.
+
+### 3. Done
+
+Restart Claude Code. You'll see the statusline appear above the input area.
+
+## What Each Section Shows
+
+```
+♥ pulse ▶ ~/dev/my-project          ← Line 1: Project identity
+⎇ main │ +3 new ~5 mod              ← Line 2: Git branch + file changes
+◆ MAX │ Opus │ CTX 42% ... │ $2.37  ← Line 3: Subscription, model, tokens, cost, duration
+⬢ MCP 3/3: context7 ✓ ...          ← Line 4: MCP server connections
+⚡Hooks 4 Submit:2 ...              ← Line 5: Active hooks by event type
+```
+
+### Token Display
+
+| Symbol | Meaning |
+|--------|---------|
+| `CTX 42%` | Context window usage (how full Claude's memory is) |
+| `↓85.0k` | Input tokens — everything sent to Claude (your messages, files, tool results) |
+| `↑15.0k` | Output tokens — everything Claude has written back |
+| `⟳45.0k` | Cache reads — tokens served from cache (saves cost) |
+
+### MCP Server Status
+
+| Icon | Meaning |
+|------|---------|
+| `✓` | Connected and working |
+| `✗` | Disconnected |
+| `○` | Disabled (detected from `~/.claude.json`) |
+| `▲` | Error |
+
+### Cost Display
+
+- Green: under $1
+- Yellow: $1–$2
+- Peach: $2–$5
+- Red: over $5
+- Burn rate `($X.XX/hr)` shown when session is longer than 1 minute
+
 ## Configuration
 
-Create `~/.config/claude-pulse/config.json`:
+Create `~/.config/claude-pulse/config.json` to customize. Here's a full example:
 
 ```json
 {
@@ -59,69 +89,143 @@ Create `~/.config/claude-pulse/config.json`:
   "lines": [
     {
       "enabled": true,
-      "components": ["tier", "model", "context", "cost"],
+      "components": ["name", "cwd"],
+      "separator": " "
+    },
+    {
+      "enabled": true,
+      "components": ["branch", "status"],
+      "separator": " │ "
+    },
+    {
+      "enabled": true,
+      "components": ["tier", "model", "context", "cost", "session"],
       "separator": " │ "
     },
     {
       "enabled": true,
       "components": ["mcp"],
-      "separator": " "
+      "separator": " │ "
     },
     {
       "enabled": true,
-      "components": ["outputStyle", "branch", "status"],
+      "components": ["hooks"],
       "separator": " │ "
     }
   ],
   "components": {
+    "name": {
+      "custom": "pulse"
+    },
+    "tier": {
+      "enabled": true,
+      "override": "max",
+      "labels": { "pro": "◆ PRO", "max": "◆ MAX", "api": "◆ API" }
+    },
+    "model": {
+      "showIcon": false
+    },
     "context": {
-      "style": "bar",
-      "showRate": true,
-      "showCompactHint": true,
-      "thresholds": { "warn": 70, "critical": 85, "danger": 95 }
+      "style": "compact",
+      "showRate": false,
+      "showTokens": true,
+      "showCompactHint": false
     },
     "cost": {
-      "showBurnRate": true,
-      "showProjection": false
+      "showBurnRate": true
     },
     "mcp": {
       "showNames": true,
-      "maxDisplay": 4
+      "showOnlyProblems": false,
+      "label": "⬢ MCP"
+    },
+    "cwd": {
+      "style": "short",
+      "showIcon": true
+    },
+    "branch": {
+      "label": "⎇"
+    },
+    "session": {
+      "showDuration": true,
+      "showId": false,
+      "label": ""
+    },
+    "hooks": {
+      "enabled": true,
+      "label": "Hooks"
     }
   }
 }
 ```
 
-## Components
+## Components Reference
 
-| Component | Description |
-|-----------|-------------|
-| `tier` | PRO/MAX/API subscription indicator |
-| `model` | Current model with icon (🧠 Opus, 🎵 Sonnet, ⚡ Haiku) |
-| `context` | Context window usage with visual bar |
-| `cost` | Session cost with optional burn rate |
-| `mcp` | MCP servers with connection status |
-| `outputStyle` | Current output style |
-| `branch` | Git branch name |
-| `status` | Git file changes (+added -deleted ~modified) |
+| Component | Description | Key Options |
+|-----------|-------------|-------------|
+| `name` | Project name or pulse logo | `custom`: `"pulse"` (animated logo), `"logo"`, or any string |
+| `cwd` | Current working directory | `style`: `"short"`, `"full"`, `"basename"` / `showIcon` |
+| `branch` | Git branch name | `label`: prefix string (e.g. `"⎇"`) |
+| `status` | Git file changes | Shows `+N new ~N mod -N del` with colors |
+| `tier` | Subscription tier (PRO/MAX/API) | `override`: force a tier / `labels`: customize text |
+| `model` | Current Claude model | `showIcon`: show emoji before model name |
+| `context` | Context window usage | `style`: `"compact"`, `"bar"`, `"detailed"`, `"both"` / `showTokens` / `showRate` |
+| `cost` | Session cost | `showBurnRate` / `showProjection` |
+| `session` | Session duration and ID | `showDuration` / `showId` |
+| `mcp` | MCP server status | `showNames` / `showOnlyProblems` / `maxDisplay` |
+| `hooks` | Active hooks by event type | Shows hook names and counts per event |
+| `cache` | Cache efficiency percentage | Color-coded hit rate |
+| `linesChanged` | Code delta | Shows `+added -removed` lines |
+
+## Context Styles
+
+| Style | Example | Description |
+|-------|---------|-------------|
+| `compact` | `42%` | Just the percentage |
+| `bar` | `●●●●○○○○○○ 42%` | Visual bar with percentage |
+| `detailed` | `84.0k/200.0k (42%)` | Token counts and percentage |
+| `both` | `●●●●○○○○○○ used:84.0k free:116.0k (58%)` | Bar with full breakdown |
+
+## Minimal Config
+
+Don't want 5 lines? Here's a compact single-line setup:
+
+```json
+{
+  "lines": [
+    {
+      "components": ["model", "context", "cost", "branch", "session"],
+      "separator": " │ "
+    }
+  ],
+  "components": {
+    "context": { "style": "compact" },
+    "cost": { "showBurnRate": true }
+  }
+}
+```
+
+Result: `Opus │ CTX 42% │ $2.37 ($4.74/hr) │ main │ 30m`
+
+## How It Works
+
+Claude Code invokes the statusline script on every message update (throttled to ~300ms). The script receives session data as JSON on stdin, renders the configured components with ANSI colors, and outputs the result to stdout.
+
+- Stateless — each invocation is independent
+- Fast — renders in under 50ms
+- No network calls — all data comes from stdin or local files
+- Catppuccin Mocha theme with 24-bit color
 
 ## Development
 
 ```bash
-# Install dependencies
-bun install
+bun install          # Install dependencies
+bun run build        # Build to dist/
+bun run lint         # Run Biome linter
+bun run dev          # Watch mode
 
-# Run in development
-bun run dev
-
-# Build
-bun run build
-
-# Build standalone binary
-bun run build:binary
-
-# Lint
-bun run lint
+# Test with sample data
+echo '{"hook_event_name":"Status",...}' | bun run src/cli.ts
 ```
 
 ## License
