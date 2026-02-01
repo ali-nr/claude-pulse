@@ -4,13 +4,7 @@ A customizable, real-time statusline for [Claude Code](https://docs.anthropic.co
 
 See your tokens, cost, context usage, MCP servers, git status, and hooks — all at a glance while you work.
 
-```
-♥ pulse ▶ ~/dev/my-project
-⎇ main │ +3 new ~5 mod
-◆ MAX │ Opus │ CTX 42% ↓85.0k ↑15.0k ⟳45.0k │ $2.37 ($4.74/hr) │ 30m
-⬢ MCP 3/3: context7 ✓  deepwiki ✓  chrome-devtools ✓
-⚡Hooks 4 Submit:2 timezone-context,best-practices Post:1 lint-check Start:1 auto-context
-```
+![claude-pulse statusline](assets/demo.png)
 
 ## Quick Start
 
