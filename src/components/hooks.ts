@@ -100,7 +100,7 @@ function getHooksSummary(): HooksSummary {
 	return { events, total, totalBroken };
 }
 
-function extractHookInfo(command: string): { name: string; broken: boolean } {
+export function extractHookInfo(command: string): { name: string; broken: boolean } {
 	// Extract meaningful name from command like "bun run /path/to/lint-check.ts"
 	const parts = command.split(/\s+/);
 

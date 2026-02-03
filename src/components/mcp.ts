@@ -198,7 +198,7 @@ function getDisabledMcpServers(): string[] {
 	}
 }
 
-function parseMcpOutput(output: string): McpServer[] {
+export function parseMcpOutput(output: string): McpServer[] {
 	const servers: McpServer[] = [];
 	const lines = output.split("\n");
 
