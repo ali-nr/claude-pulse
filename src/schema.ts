@@ -242,17 +242,35 @@ export const ComponentConfigsSchema = z.object({
 
 export type ComponentConfigs = z.infer<typeof ComponentConfigsSchema>;
 
-export const LineConfigSchema = z.object({
+export const LineOverrideSchema = z.object({
 	enabled: z.boolean().optional(),
-	components: z.array(z.string()),
 	separator: z.string().optional(),
 });
 
-export type LineConfig = z.infer<typeof LineConfigSchema>;
+export type LineOverride = z.infer<typeof LineOverrideSchema>;
+
+// Fixed 5-line layout — users can enable/disable and change separators, but not rearrange
+// Line 1 (identity) is not configurable — pulse logo + cwd is fixed branding
+export const LinesConfigSchema = z.object({
+	git: LineOverrideSchema.optional(),
+	engine: LineOverrideSchema.optional(),
+	mcp: LineOverrideSchema.optional(),
+	hooks: LineOverrideSchema.optional(),
+});
+
+export type LinesConfig = z.infer<typeof LinesConfigSchema>;
+
+// Internal line definition used at render time
+export interface LineDefinition {
+	name: string;
+	enabled: boolean;
+	components: string[];
+	separator: string;
+}
 
 export const PulseConfigSchema = z.object({
 	theme: z.string(),
-	lines: z.array(LineConfigSchema),
+	lines: LinesConfigSchema.optional(),
 	components: ComponentConfigsSchema,
 	interactive: z
 		.object({

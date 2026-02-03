@@ -11,7 +11,12 @@ See your tokens, cost, context usage, MCP servers, git status, and hooks — all
 ### 1. Install
 
 ```bash
-# Clone and build
+npm install -g claude-pulse
+```
+
+Or install from source:
+
+```bash
 git clone https://github.com/ali-nr/claude-pulse.git
 cd claude-pulse
 bun install
@@ -26,12 +31,12 @@ Add to your Claude Code settings (`~/.claude/settings.json`):
 {
   "statusLine": {
     "type": "command",
-    "command": "node /path/to/claude-pulse/dist/cli.js"
+    "command": "claude-pulse"
   }
 }
 ```
 
-Replace `/path/to/claude-pulse` with the actual path where you cloned the repo.
+If installed from source, use the full path: `"command": "node /path/to/claude-pulse/dist/cli.js"`
 
 ### 3. Done
 
@@ -73,133 +78,208 @@ Restart Claude Code. You'll see the statusline appear above the input area.
 - Red: over $5
 - Burn rate `($X.XX/hr)` shown when session is longer than 1 minute
 
-## Configuration
+## Customization
 
-Create `~/.config/claude-pulse/config.json` to customize. Here's a full example:
+Create `~/.config/claude-pulse/config.json` to customize everything. You only need to include the options you want to change — everything else uses sensible defaults.
+
+### Layout
+
+The statusline has 5 fixed lines, each with a purpose:
+
+| Line | Key | Components |
+|------|-----|------------|
+| 1 — Identity | — | `♥ pulse ▶ ~/path` (fixed) |
+| 2 — Git | `git` | `branch`, `status` |
+| 3 — Engine | `engine` | `tier`, `model`, `context`, `cost`, `session` |
+| 4 — MCP | `mcp` | `mcp` |
+| 5 — Hooks | `hooks` | `hooks` |
+
+Line 1 is the claude-pulse brand line and is not configurable. Hide or adjust the other lines:
 
 ```json
 {
-  "theme": "catppuccin",
-  "lines": [
-    {
-      "enabled": true,
-      "components": ["name", "cwd"],
-      "separator": " "
-    },
-    {
-      "enabled": true,
-      "components": ["branch", "status"],
-      "separator": " │ "
-    },
-    {
-      "enabled": true,
-      "components": ["tier", "model", "context", "cost", "session"],
-      "separator": " │ "
-    },
-    {
-      "enabled": true,
-      "components": ["mcp"],
-      "separator": " │ "
-    },
-    {
-      "enabled": true,
-      "components": ["hooks"],
-      "separator": " │ "
-    }
-  ],
+  "lines": {
+    "hooks": { "enabled": false },
+    "engine": { "separator": " | " }
+  }
+}
+```
+
+The line structure is fixed — you customize the components within each line, not the layout itself.
+
+### Subscription Tier
+
+The tier badge auto-detects from your Claude account (`~/.claude.json`). If detection doesn't work for your setup, override it:
+
+```json
+{
   "components": {
-    "name": {
-      "custom": "pulse"
-    },
     "tier": {
       "enabled": true,
       "override": "max",
       "labels": { "pro": "◆ PRO", "max": "◆ MAX", "api": "◆ API" }
-    },
-    "model": {
-      "showIcon": false
-    },
+    }
+  }
+}
+```
+
+Set `"override"` to `"pro"`, `"max"`, or `"api"`. Customize labels to any text you want.
+
+### Context Window
+
+Five display styles available:
+
+| Style | Example | Best For |
+|-------|---------|----------|
+| `compact` | `42%` | Minimal |
+| `bar` | `●●●●○○○○○○ 42%` | Visual |
+| `detailed` | `84.0k/200.0k (42%)` | Token-aware |
+| `both` | `●●●●○○○○○○ used:84.0k free:116.0k` | Everything |
+
+```json
+{
+  "components": {
     "context": {
       "style": "compact",
-      "showRate": false,
       "showTokens": true,
-      "showCompactHint": false
-    },
-    "cost": {
-      "showBurnRate": true
-    },
+      "showRate": false,
+      "showCompactHint": false,
+      "thresholds": { "warn": 70, "critical": 85, "danger": 95 }
+    }
+  }
+}
+```
+
+- `showTokens` — show `↓input ↑output ⟳cache` breakdown
+- `showRate` — show tokens/min consumption rate
+- `showCompactHint` — suggest `/compact` when context is high
+- `thresholds` — customize when colors change (yellow/orange/red)
+
+### MCP Servers
+
+Control how much detail you see:
+
+```json
+{
+  "components": {
     "mcp": {
       "showNames": true,
       "showOnlyProblems": false,
-      "label": "⬢ MCP"
-    },
-    "cwd": {
-      "style": "short",
-      "showIcon": true
-    },
-    "branch": {
-      "label": "⎇"
-    },
-    "session": {
-      "showDuration": true,
-      "showId": false,
-      "label": ""
-    },
+      "maxDisplay": 4,
+      "label": "⬢ MCP",
+      "icons": { "connected": "✓", "disconnected": "✗", "disabled": "○", "error": "▲" }
+    }
+  }
+}
+```
+
+| Option | What It Does |
+|--------|-------------|
+| `showNames: true` | `⬢ MCP 3/3: context7 ✓  deepwiki ✓  chrome ✓` |
+| `showNames: false` | `⬢ MCP 3/3` |
+| `showOnlyProblems: true` | Hides MCP line entirely when all servers are healthy |
+| `maxDisplay: 2` | Shows first 2 servers + `+1 more` |
+
+Failed/disconnected servers always show in red regardless of settings.
+
+### Hooks
+
+Control the verbosity of hook display:
+
+```json
+{
+  "components": {
     "hooks": {
-      "enabled": true,
+      "showNames": true,
+      "showCount": true,
       "label": "Hooks"
     }
   }
 }
 ```
 
-## Components Reference
+| Setting | Result |
+|---------|--------|
+| Both `true` (default) | `⚡Hooks 8 Submit:3 timezone-context,best-practices Post:2 lint-check` |
+| `showNames: false` | `⚡Hooks 8 Submit:3 Post:2 Start:2 End:1` |
+| Both `false` | `⚡Hooks 8` |
 
-| Component | Description | Key Options |
-|-----------|-------------|-------------|
-| `name` | Project name or pulse logo | `custom`: `"pulse"` (animated logo), `"logo"`, or any string |
-| `cwd` | Current working directory | `style`: `"short"`, `"full"`, `"basename"` / `showIcon` |
-| `branch` | Git branch name | `label`: prefix string (e.g. `"⎇"`) |
-| `status` | Git file changes | Shows `+N new ~N mod -N del` with colors |
-| `tier` | Subscription tier (PRO/MAX/API) | `override`: force a tier / `labels`: customize text |
-| `model` | Current Claude model | `showIcon`: show emoji before model name |
-| `context` | Context window usage | `style`: `"compact"`, `"bar"`, `"detailed"`, `"both"` / `showTokens` / `showRate` |
-| `cost` | Session cost | `showBurnRate` / `showProjection` |
-| `session` | Session duration and ID | `showDuration` / `showId` |
-| `mcp` | MCP server status | `showNames` / `showOnlyProblems` / `maxDisplay` |
-| `hooks` | Active hooks by event type | Shows hook names and counts per event |
-| `cache` | Cache efficiency percentage | Color-coded hit rate |
-| `linesChanged` | Code delta | Shows `+added -removed` lines |
+Broken hooks (invalid file paths) always show in red with `▲` regardless of settings.
 
-## Context Styles
-
-| Style | Example | Description |
-|-------|---------|-------------|
-| `compact` | `42%` | Just the percentage |
-| `bar` | `●●●●○○○○○○ 42%` | Visual bar with percentage |
-| `detailed` | `84.0k/200.0k (42%)` | Token counts and percentage |
-| `both` | `●●●●○○○○○○ used:84.0k free:116.0k (58%)` | Bar with full breakdown |
-
-## Minimal Config
-
-Don't want 5 lines? Here's a compact single-line setup:
+### Cost
 
 ```json
 {
-  "lines": [
-    {
-      "components": ["model", "context", "cost", "branch", "session"],
-      "separator": " │ "
-    }
-  ],
   "components": {
+    "cost": {
+      "showBurnRate": true,
+      "showProjection": false,
+      "label": "$"
+    }
+  }
+}
+```
+
+Cost colors automatically: green < $1, yellow $1–$2, peach $2–$5, red > $5. Burn rate `($X.XX/hr)` appears after the session is longer than 1 minute.
+
+### Other Components
+
+| Component | Key Options |
+|-----------|-------------|
+| `model` | `showIcon: true` adds emoji (🧠 Opus, 🎵 Sonnet, ⚡ Haiku) |
+| `branch` | `label: "⎇"` sets a prefix before the branch name |
+| `session` | `showDuration: true`, `showId: false` |
+| `cache` | `label: "Cache"` — shows cache hit rate percentage |
+| `linesChanged` | Shows `+added -removed` lines changed by Claude |
+| `time` | `format: "12h"` or `"24h"`, `showTimezone: true` |
+
+All components accept `"enabled": false` to hide them.
+
+## Example Configs
+
+### Minimal — hide what you don't need
+
+```json
+{
+  "lines": {
+    "hooks": { "enabled": false }
+  },
+  "components": {
+    "status": { "enabled": false },
+    "mcp": { "showOnlyProblems": true },
     "context": { "style": "compact" },
     "cost": { "showBurnRate": true }
   }
 }
 ```
 
-Result: `Opus │ CTX 42% │ $2.37 ($4.74/hr) │ main │ 30m`
+### Full detail — everything visible
+
+```json
+{
+  "components": {
+    "tier": { "enabled": true, "override": "max" },
+    "context": { "style": "compact", "showTokens": true },
+    "cost": { "showBurnRate": true },
+    "mcp": { "showNames": true, "showOnlyProblems": false },
+    "hooks": { "showNames": true }
+  }
+}
+```
+
+### Quiet — problems only
+
+```json
+{
+  "components": {
+    "context": { "style": "compact" },
+    "mcp": { "showNames": true, "showOnlyProblems": true },
+    "hooks": { "showNames": false, "showCount": false }
+  }
+}
+```
+
+MCP line only appears when a server has problems. Hooks show just the total count.
 
 ## How It Works
 

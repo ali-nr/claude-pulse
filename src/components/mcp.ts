@@ -3,11 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ComponentOutput, McpConfig, McpServer } from "../schema";
+import { loadState, saveState } from "../state";
 import type { Theme } from "../themes/catppuccin";
 
-let cachedServers: McpServer[] | null = null;
-let cacheTime = 0;
-const CACHE_TTL = 5000; // 5 seconds
+const CACHE_TTL = 30000; // 30 seconds — claude mcp list does health checks, don't call too often
 
 export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 	if (config.enabled === false) {
@@ -85,7 +84,7 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 				break;
 			default:
 				icon = icons.error;
-				color = theme.yellow;
+				color = theme.red;
 		}
 
 		return `${color}${server.name} ${icon}${theme.reset}`;
@@ -111,35 +110,53 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 }
 
 function getMcpServers(): McpServer[] {
+	const state = loadState();
 	const now = Date.now();
-	if (cachedServers && now - cacheTime < CACHE_TTL) {
-		return cachedServers;
-	}
+	const lastUpdated = state.mcp?.lastUpdated ?? 0;
 
-	try {
-		const output = execSync("claude mcp list 2>/dev/null", {
-			encoding: "utf-8",
-			timeout: 3000,
-		});
+	let servers: McpServer[];
 
-		cachedServers = parseMcpOutput(output);
+	if (state.mcp?.servers && now - lastUpdated < CACHE_TTL) {
+		// Use persisted server list but re-apply disabled status below
+		servers = (state.mcp.servers as McpServer[]).map((s) => ({ ...s }));
+	} else {
+		// Try fetching fresh data
+		try {
+			const output = execSync("claude mcp list 2>/dev/null", {
+				encoding: "utf-8",
+				timeout: 3000,
+			});
 
-		// Cross-reference with ~/.claude.json to detect disabled servers
-		// claude mcp list doesn't reflect runtime disabled state
-		const disabledNames = getDisabledMcpServers();
-		if (disabledNames.length > 0) {
-			for (const server of cachedServers) {
-				if (disabledNames.includes(server.name)) {
-					server.status = "disabled";
-				}
+			servers = parseMcpOutput(output);
+
+			// Persist to state for next invocation
+			saveState({
+				...state,
+				mcp: { servers, lastUpdated: now },
+			});
+		} catch {
+			// Command failed — fall back to last known state
+			if (state.mcp?.servers && state.mcp.servers.length > 0) {
+				servers = (state.mcp.servers as McpServer[]).map((s) => ({ ...s }));
+			} else {
+				return [];
 			}
 		}
-	} catch {
-		cachedServers = [];
 	}
 
-	cacheTime = now;
-	return cachedServers;
+	// Always re-check disabled state from ~/.claude.json (fast file read)
+	// This updates immediately when user toggles servers in the MCP menu
+	const disabledNames = getDisabledMcpServers();
+	for (const server of servers) {
+		if (disabledNames.includes(server.name)) {
+			server.status = "disabled";
+		} else if (server.status === "disabled") {
+			// Server was disabled but is no longer in the disabled list — re-enable
+			server.status = "connected";
+		}
+	}
+
+	return servers;
 }
 
 interface ClaudeJsonProject {
@@ -186,27 +203,22 @@ function parseMcpOutput(output: string): McpServer[] {
 	const lines = output.split("\n");
 
 	for (const line of lines) {
-		// New format: "context7: npx -y @upstash/context7-mcp - ✓ Connected"
-		const newFormatMatch = line.match(
-			/^(\S+):\s+(.+?)\s+-\s+([✓✔✗✘○◯!])\s*(Connected|Disconnected|Disabled|Error)/i,
-		);
+		// Format: "context7: npx -y @upstash/context7-mcp - ✓ Connected"
+		// Also:   "chrome-devtools: npx -y ... - ✗ Failed to connect"
+		const match = line.match(/^(\S+):\s+(.+?)\s+-\s+([✓✔✗✘○◯!⚠])\s*(.+)?/);
 
-		if (newFormatMatch) {
-			const [, name, command, , statusText] = newFormatMatch;
+		if (match) {
+			const [, name, command, icon, statusText] = match;
 			let status: McpServer["status"];
 
-			switch (statusText.toLowerCase()) {
-				case "connected":
-					status = "connected";
-					break;
-				case "disconnected":
-					status = "disconnected";
-					break;
-				case "disabled":
-					status = "disabled";
-					break;
-				default:
-					status = "error";
+			if (icon === "✓" || icon === "✔") {
+				status = "connected";
+			} else if (icon === "○" || icon === "◯") {
+				status = "disabled";
+			} else {
+				// ✗, ✘, !, ⚠ — any non-success icon means a problem
+				// Covers: "Disconnected", "Failed to connect", "Error", etc.
+				status = statusText?.toLowerCase().includes("disconnect") ? "disconnected" : "error";
 			}
 
 			servers.push({ name, status, command });

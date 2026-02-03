@@ -9,17 +9,10 @@ export interface McpServerState {
 	status: string;
 }
 
-export interface McpFlash {
-	server: string;
-	from: string;
-	to: string;
-	rendersLeft: number;
-}
-
 export interface PulseState {
 	mcp?: {
 		servers: McpServerState[];
-		flash: McpFlash[];
+		lastUpdated?: number;
 	};
 	firstRenderAt?: number;
 }

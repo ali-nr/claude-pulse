@@ -1,5 +1,7 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
+// @ts-expect-error — bun build resolves JSON imports at bundle time
+import packageJson from "../package.json";
 import {
 	renderBranch,
 	renderCache,
@@ -18,15 +20,17 @@ import {
 	renderTier,
 	renderTime,
 } from "./components";
-import { loadConfig } from "./config";
+import { getLines, loadConfig } from "./config";
 import { type ClaudeStatusInput, type ComponentOutput, parseClaudeInput } from "./schema";
 import { catppuccin } from "./themes/catppuccin";
+
+const VERSION = packageJson.version ?? "1.0.0";
 
 async function main() {
 	// Check for CLI commands
 	const args = process.argv.slice(2);
 	if (args.includes("--version") || args.includes("-v")) {
-		console.log("claude-pulse v0.0.1");
+		console.log(`claude-pulse v${VERSION}`);
 		process.exit(0);
 	}
 	if (args.includes("--help") || args.includes("-h")) {
@@ -63,16 +67,18 @@ Configuration:
 	const config = loadConfig();
 	const theme = catppuccin;
 
-	// Render each configured line
+	// Render fixed line layout with user overrides
+	const lines = getLines(config);
 	const outputLines: string[] = [];
 
-	for (const lineConfig of config.lines) {
-		if (lineConfig.enabled === false) continue;
+	for (const line of lines) {
+		if (!line.enabled) continue;
 
 		const parts: string[] = [];
-		const separator = lineConfig.separator ?? ` ${theme.overlay2}│${theme.reset} `;
+		const separator = ` ${theme.overlay2}│${theme.reset} `;
+		const sep = line.separator ?? separator;
 
-		for (const componentName of lineConfig.components) {
+		for (const componentName of line.components) {
 			const output = renderComponent(componentName, input, config, theme);
 			if (output.text) {
 				parts.push(output.text);
@@ -80,7 +86,7 @@ Configuration:
 		}
 
 		if (parts.length > 0) {
-			outputLines.push(parts.join(separator));
+			outputLines.push(parts.join(sep));
 		}
 	}
 
@@ -108,7 +114,7 @@ function renderComponent(
 		case "cwd":
 			return renderCwd(input, config.components.cwd ?? {}, theme);
 		case "name":
-			return renderName(input, config.components.name ?? {}, theme);
+			return renderName(input, { custom: "pulse" }, theme);
 		case "time":
 			return renderTime(config.components.time ?? {}, theme);
 		case "system":

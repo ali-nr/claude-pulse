@@ -21,16 +21,14 @@ interface ClaudeSettings {
 interface HookDetail {
 	count: number;
 	names: string[];
+	broken: string[];
 }
 
 interface HooksSummary {
 	events: Record<string, HookDetail>;
 	total: number;
+	totalBroken: number;
 }
-
-let cachedSummary: HooksSummary | null = null;
-let cacheTime = 0;
-const CACHE_TTL = 5000; // 5 seconds — responsive to config changes
 
 // Short labels for hook event types
 const EVENT_LABELS: Record<string, string> = {
@@ -56,25 +54,34 @@ export function renderHooks(config: HooksConfig, theme: Theme): ComponentOutput 
 		return { text };
 	}
 
-	// Build event type breakdown with hook names: "Post:2 lint-check,agent-comm"
+	const hookLabel = config.label ?? "Hooks";
+	const showNames = config.showNames !== false;
+	const showCount = config.showCount !== false;
+
+	// Minimal mode: just total count
+	if (!showCount && !showNames) {
+		const text = `${theme.yellow}⚡${hookLabel} ${summary.total}${theme.reset}`;
+		return { text };
+	}
+
+	// Build event type breakdown
 	const eventParts = Object.entries(summary.events).map(([event, detail]) => {
 		const label = EVENT_LABELS[event] ?? event;
-		const names =
-			detail.names.length > 0 ? ` ${theme.flamingo}${detail.names.join(",")}${theme.reset}` : "";
-		return `${theme.lavender}${label}:${theme.reset}${theme.peach}${detail.count}${theme.reset}${names}`;
+		const goodNames =
+			showNames && detail.names.length > 0
+				? ` ${theme.flamingo}${detail.names.join(",")}${theme.reset}`
+				: "";
+		const brokenNames =
+			detail.broken.length > 0 ? ` ${theme.red}${detail.broken.join(",")} ▲${theme.reset}` : "";
+		const countStr = showCount ? `${theme.peach}${detail.count}${theme.reset}` : "";
+		return `${theme.lavender}${label}:${theme.reset}${countStr}${goodNames}${brokenNames}`;
 	});
 
-	const hookLabel = config.label ?? "Hooks";
 	const text = `${theme.yellow}⚡${hookLabel} ${summary.total}${theme.reset} ${eventParts.join(" ")}`;
 	return { text };
 }
 
 function getHooksSummary(): HooksSummary {
-	const now = Date.now();
-	if (cachedSummary !== null && now - cacheTime < CACHE_TTL) {
-		return cachedSummary;
-	}
-
 	const events: Record<string, HookDetail> = {};
 	let total = 0;
 
@@ -84,16 +91,16 @@ function getHooksSummary(): HooksSummary {
 	const projectPath = join(process.cwd(), ".claude", "settings.json");
 	mergeHooksFromFile(projectPath, events);
 
+	let totalBroken = 0;
 	for (const detail of Object.values(events)) {
 		total += detail.count;
+		totalBroken += detail.broken.length;
 	}
 
-	cachedSummary = { events, total };
-	cacheTime = now;
-	return cachedSummary;
+	return { events, total, totalBroken };
 }
 
-function extractHookName(command: string): string {
+function extractHookInfo(command: string): { name: string; broken: boolean } {
 	// Extract meaningful name from command like "bun run /path/to/lint-check.ts"
 	const parts = command.split(/\s+/);
 
@@ -101,16 +108,17 @@ function extractHookName(command: string): string {
 	for (const part of parts) {
 		if (part.includes("/")) {
 			const base = part.split("/").pop() ?? part;
-			return base.replace(/\.[^.]+$/, "");
+			const name = base.replace(/\.[^.]+$/, "");
+			// Validate the file path exists
+			const broken = !existsSync(part);
+			return { name, broken };
 		}
 	}
 
 	// No file path found — use the command name (e.g. "cm" from "cm reflect --days 1")
 	const cmd = parts[0];
-	if (parts.length > 1) {
-		return `${cmd}-${parts[1]}`;
-	}
-	return cmd;
+	const name = parts.length > 1 ? `${cmd}-${parts[1]}` : cmd;
+	return { name, broken: false };
 }
 
 function mergeHooksFromFile(filePath: string, events: Record<string, HookDetail>): void {
@@ -123,15 +131,21 @@ function mergeHooksFromFile(filePath: string, events: Record<string, HookDetail>
 		for (const [eventName, groups] of Object.entries(settings.hooks)) {
 			if (!Array.isArray(groups)) continue;
 			if (!events[eventName]) {
-				events[eventName] = { count: 0, names: [] };
+				events[eventName] = { count: 0, names: [], broken: [] };
 			}
 			for (const group of groups) {
 				if (Array.isArray(group.hooks)) {
 					for (const hook of group.hooks) {
 						events[eventName].count++;
-						const name = extractHookName(hook.command);
-						if (name && !events[eventName].names.includes(name)) {
-							events[eventName].names.push(name);
+						const info = extractHookInfo(hook.command);
+						if (info.name) {
+							if (info.broken) {
+								if (!events[eventName].broken.includes(info.name)) {
+									events[eventName].broken.push(info.name);
+								}
+							} else if (!events[eventName].names.includes(info.name)) {
+								events[eventName].names.push(info.name);
+							}
 						}
 					}
 				}

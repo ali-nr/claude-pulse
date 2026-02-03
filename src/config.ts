@@ -1,32 +1,30 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { PulseConfig } from "./schema";
+import type { LineDefinition, PulseConfig } from "./schema";
 
 const CONFIG_PATHS = [
 	join(homedir(), ".config", "claude-pulse", "config.json"),
 	join(homedir(), ".claude-pulse.json"),
 ];
 
+// Fixed 5-line layout — components and order are not user-configurable
+// Line 1 (identity) is hardcoded branding — not in user-configurable lines
+const FIXED_LINES: LineDefinition[] = [
+	{ name: "identity", enabled: true, components: ["name", "cwd"], separator: " " },
+	{ name: "git", enabled: true, components: ["branch", "status"], separator: " │ " },
+	{
+		name: "engine",
+		enabled: true,
+		components: ["tier", "model", "context", "cost", "session"],
+		separator: " │ ",
+	},
+	{ name: "mcp", enabled: true, components: ["mcp"], separator: " │ " },
+	{ name: "hooks", enabled: true, components: ["hooks"], separator: " │ " },
+];
+
 export const DEFAULT_CONFIG: PulseConfig = {
 	theme: "catppuccin",
-	lines: [
-		{
-			enabled: true,
-			components: ["model", "context", "cost", "branch", "session"],
-			separator: " ",
-		},
-		{
-			enabled: true,
-			components: ["mcp", "linesChanged", "hooks"],
-			separator: " │ ",
-		},
-		{
-			enabled: false,
-			components: ["cache", "cwd"],
-			separator: " │ ",
-		},
-	],
 	components: {
 		tier: {
 			enabled: false,
@@ -102,7 +100,7 @@ export function loadConfig(): PulseConfig {
 			try {
 				const content = readFileSync(configPath, "utf-8");
 				const userConfig = JSON.parse(content) as Partial<PulseConfig>;
-				return deepMerge(DEFAULT_CONFIG, userConfig);
+				return mergeConfig(DEFAULT_CONFIG, userConfig);
 			} catch {
 				// Fall back to default if config is invalid
 			}
@@ -111,7 +109,25 @@ export function loadConfig(): PulseConfig {
 	return DEFAULT_CONFIG;
 }
 
-function deepMerge(target: PulseConfig, source: Partial<PulseConfig>): PulseConfig {
+/**
+ * Resolve the fixed line layout with user overrides for enabled/separator.
+ * Identity line is not user-configurable — always renders pulse logo + cwd.
+ */
+export function getLines(config: PulseConfig): LineDefinition[] {
+	const overrides = config.lines ?? {};
+	return FIXED_LINES.map((line) => {
+		if (line.name === "identity") return line;
+		const userOverride = overrides[line.name as keyof typeof overrides];
+		if (!userOverride) return line;
+		return {
+			...line,
+			enabled: userOverride.enabled ?? line.enabled,
+			separator: userOverride.separator ?? line.separator,
+		};
+	});
+}
+
+function mergeConfig(target: PulseConfig, source: Partial<PulseConfig>): PulseConfig {
 	const result = { ...target };
 
 	if (source.theme !== undefined) result.theme = source.theme;

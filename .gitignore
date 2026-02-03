@@ -5,3 +5,16 @@ dist/
 claude-pulse
 bun.lockb
 *.bun-build
+
+# Environment
+.env
+.env.*
+
+# Agent/tool directories
+.beads/
+.claude/
+.codex/
+.gemini/
+.cursor/
+_bmad/
+_bmad-output/
