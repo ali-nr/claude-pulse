@@ -20,6 +20,8 @@ jobs:
 
       - run: bun run lint
 
+      - run: bun test
+
       - run: bun run build
 
       - run: node dist/cli.js --version
