@@ -38,3 +38,52 @@ bd sync               # Sync with git
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 
+## Testing
+
+Run tests with `bun test`. Test files live next to their source as `*.test.ts`.
+
+### AAA Pattern (Arrange-Act-Assert)
+
+Every test follows three distinct phases:
+
+```typescript
+test("should return red cost when over $5", () => {
+  // Arrange — set up inputs and expected state
+  const input = { cost: { total_cost_usd: 7.50 } };
+  const config = { enabled: true };
+
+  // Act — call the function under test
+  const result = renderCost(input, config, theme);
+
+  // Assert — verify the output
+  expect(result.text).toContain("7.50");
+});
+```
+
+### Rules
+
+- **One behavior per test** — if you need "and" in the test name, split it into two tests
+- **No test interdependence** — tests must pass in any order, never rely on shared mutable state
+- **Test the interface, not the implementation** — call the public function, assert the output. Don't test private helpers directly
+- **Descriptive names** — use `"should [action] when [condition]"` format
+- **Realistic inputs** — use data that resembles actual Claude Code JSON, not placeholder values
+- **No network calls in tests** — mock `execSync` for anything that shells out (e.g., `claude mcp list`, `git`)
+
+### What to Test
+
+| Priority | What | Why |
+|----------|------|-----|
+| High | Component renderers (`renderContext`, `renderCost`, `renderMcp`, etc.) | Pure functions, easy to test, core output |
+| High | Config merging (`mergeConfig`, `getLines`) | Wrong defaults break everything |
+| High | MCP output parsing (`parseMcpOutput`) | Fragile regex against external CLI output |
+| High | Hook path extraction (`extractHookInfo`) | File path validation logic |
+| Medium | Schema parsing (`parseClaudeInput`) | Input boundary |
+| Low | Theme constants | Static values, unlikely to break |
+
+### Running
+
+```bash
+bun test              # Run all tests
+bun test --watch      # Watch mode
+bun test src/components/cost.test.ts  # Single file
+```
