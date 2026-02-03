@@ -187,7 +187,7 @@ Colors change automatically: green < $1, yellow $1-$2, peach $2-$5, red > $5. Bu
 <details>
 <summary><strong>Subscription tier</strong></summary>
 
-Auto-detects from `~/.claude.json`. Override if detection doesn't work:
+Disabled by default. There's no official way to detect your plan, so set it manually:
 
 ```json
 {
