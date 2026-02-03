@@ -1,10 +1,10 @@
 {
-	"name": "claude-pulse",
+	"name": "cc-pulse",
 	"version": "1.0.0",
 	"description": "A customizable, real-time statusline for Claude Code",
 	"type": "module",
 	"bin": {
-		"claude-pulse": "./dist/cli.js"
+		"cc-pulse": "./dist/cli.js"
 	},
 	"files": [
 		"dist",

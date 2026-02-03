@@ -29,7 +29,7 @@ Context usage changes color as it fills up. Cost goes from green to red. Failed 
 ## Install
 
 ```bash
-npm install -g claude-pulse
+npm install -g cc-pulse
 ```
 
 Add to your Claude Code settings (`~/.claude/settings.json`):
@@ -38,7 +38,7 @@ Add to your Claude Code settings (`~/.claude/settings.json`):
 {
   "statusLine": {
     "type": "command",
-    "command": "claude-pulse"
+    "command": "cc-pulse"
   }
 }
 ```

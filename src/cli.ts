@@ -30,16 +30,16 @@ async function main() {
 	// Check for CLI commands
 	const args = process.argv.slice(2);
 	if (args.includes("--version") || args.includes("-v")) {
-		console.log(`claude-pulse v${VERSION}`);
+		console.log(`cc-pulse v${VERSION}`);
 		process.exit(0);
 	}
 	if (args.includes("--help") || args.includes("-h")) {
-		console.log(`claude-pulse - A slick, reactive statusline for Claude Code
+		console.log(`cc-pulse - A customizable, real-time statusline for Claude Code
 
 Usage:
-  claude-pulse              Read JSON from stdin and output statusline
-  claude-pulse --version    Show version
-  claude-pulse --help       Show this help
+  cc-pulse              Read JSON from stdin and output statusline
+  cc-pulse --version    Show version
+  cc-pulse --help       Show this help
 
 Configuration:
   ~/.config/claude-pulse/config.json
