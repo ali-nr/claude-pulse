@@ -6,9 +6,11 @@ A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/clau
 
 ## Why
 
-Claude Code doesn't show you how much context you've used, what the session is costing, or whether your MCP servers are healthy. You find out when it's too late — a compaction you didn't expect, a cost you didn't track, a broken MCP you didn't notice.
-
-claude-pulse puts all of that in front of you, live, as you work.
+- **Context & cost** — context window %, input/output/cache token breakdown, cost with burn rate, session duration
+- **MCP server health** — connection status for every server: connected, disconnected, disabled, or erroring
+- **Hook monitoring** — all hooks by event type, with broken path detection
+- **Git at a glance** — branch, new/modified/deleted file counts
+- **Fully customizable** — every component is independently configurable with multiple display styles
 
 ## What You Get
 
