@@ -1,38 +1,19 @@
-# claude-pulse
+# cc-pulse
+
+[![npm version](https://img.shields.io/npm/v/cc-pulse)](https://www.npmjs.com/package/cc-pulse)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-![claude-pulse statusline](assets/demo.png)
+![cc-pulse statusline](assets/demo.png)
 
-## Why
-
-- **Context & cost** — context window %, input/output/cache token breakdown, cost with burn rate, session duration
-- **MCP server health** — connection status for every server: connected, disconnected, disabled, or erroring
-- **Hook monitoring** — all hooks by event type, with broken path detection
-- **Git at a glance** — branch, new/modified/deleted file counts
-- **Fully customizable** — every component is independently configurable with multiple display styles
-
-## What You Get
-
-Five lines of information, updated on every message:
-
-| Line | What it shows |
-|------|---------------|
-| **Identity** | Project name + working directory |
-| **Git** | Current branch + file changes (new, modified, deleted) |
-| **Engine** | Model, remaining % until compaction, token cost, session duration |
-| **MCP** | Server connections with health status (connected, disconnected, disabled, error) |
-| **Hooks** | Active hooks by event type, with broken path detection |
-
-Context goes from green to red as it approaches compaction. Cost goes from green to red. Failed MCP servers and broken hooks are highlighted immediately.
-
-## Install
+## 🚀 Quick Start
 
 ```bash
 npm install -g cc-pulse
 ```
 
-Add to your Claude Code settings (`~/.claude/settings.json`):
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -43,62 +24,54 @@ Add to your Claude Code settings (`~/.claude/settings.json`):
 }
 ```
 
-Restart Claude Code. The statusline appears above the input area.
+Restart Claude Code — the statusline appears above the input area.
 
-<details>
-<summary><strong>Install from source</strong></summary>
+## ✨ Features
 
-```bash
-git clone https://github.com/ali-nr/claude-pulse.git
-cd claude-pulse
-bun install
-bun run build
+| Feature | Description |
+|---------|-------------|
+| **→Compact indicator** | Shows remaining % until auto-compaction — colors shift from green to red as you approach the limit |
+| **Token breakdown** | Input ↓, output ↑, and cache ⟳ tokens at a glance |
+| **Cost tracking** | Session cost with color coding ($1 yellow, $2 orange, $5+ red) |
+| **MCP health** | Live connection status for all MCP servers |
+| **Hook monitoring** | Active hooks by event type, with broken path detection |
+| **Git status** | Branch name + new/modified/deleted file counts |
+
+## 📊 What You Get
+
+Five lines of information, updated on every message:
+
+```
+♥ pulse ▶ ~/dev/my-project
+⎇ main │ +2 new ~3 mod
+◆ MAX │ Opus │ →Compact ●●●●●○○○○○ 50% ↓84k ↑16k ⟳5k │ $0.50 │ 3m
+⬢ MCP 3/3: context7 ✓  deepwiki ✓  chrome-devtools ✓
+⚡Hooks 8 Submit:3 timezone-context,best-practices Post:2 lint-check
 ```
 
-Use the full path in settings: `"command": "node /path/to/claude-pulse/dist/cli.js"`
+| Line | Content |
+|------|---------|
+| **Identity** | Project name + working directory |
+| **Git** | Branch + file changes (new, modified, deleted) |
+| **Engine** | Tier, model, context remaining, tokens, cost, duration |
+| **MCP** | Server count + individual status (✓ connected, ✗ disconnected, ○ disabled) |
+| **Hooks** | Hook count by event type, with broken path warnings |
 
-</details>
+## ⚙️ Configuration
 
-## Customize
-
-Create `~/.config/claude-pulse/config.json` to override defaults. You only need to include what you want to change.
-
-<details>
-<summary><strong>Layout</strong></summary>
-
-The 5-line structure is fixed. You can enable/disable lines and change separators:
-
-```json
-{
-  "lines": {
-    "hooks": { "enabled": false },
-    "engine": { "separator": " | " }
-  }
-}
-```
-
-| Line | Key | Can toggle |
-|------|-----|------------|
-| Identity | — | No (fixed branding) |
-| Git | `git` | Yes |
-| Engine | `engine` | Yes |
-| MCP | `mcp` | Yes |
-| Hooks | `hooks` | Yes |
-
-</details>
+Create `~/.config/claude-pulse/config.json` to customize. Only include what you want to change.
 
 <details>
-<summary><strong>Context window</strong></summary>
+<summary><strong>Context Window</strong></summary>
 
-Shows remaining space until auto-compaction triggers. When it reaches 0%, Claude will compact the conversation.
+The `→Compact` indicator shows remaining space until auto-compaction. When it reaches 0%, Claude compacts the conversation.
 
 ```json
 {
   "components": {
     "context": {
-      "style": "compact",
+      "style": "bar",
       "showTokens": true,
-      "showRate": false,
       "thresholds": { "warn": 70, "critical": 85, "danger": 95 }
     }
   }
@@ -107,40 +80,65 @@ Shows remaining space until auto-compaction triggers. When it reaches 0%, Claude
 
 | Style | Example |
 |-------|---------|
+| `bar` (default) | `→Compact ●●●●●●○○○○ 58%` |
 | `compact` | `→Compact 58%` |
-| `bar` | `●●●●●●○○○○ 58%` |
-| `detailed` | `116.0k/200.0k (58%)` |
+| `detailed` | `→Compact 116.0k/200.0k (58%)` |
 | `both` | `●●●●●●○○○○ free:116.0k used:84.0k` |
 
-Enable `showTokens` to see `↓input ↑output ⟳cache` breakdown.
+**Color thresholds** — as remaining % drops:
+- **Green**: > 30% remaining (safe)
+- **Yellow**: 30% remaining (warn)
+- **Orange**: 15% remaining (critical)
+- **Red + 🔴**: 5% remaining (danger)
 
 </details>
 
 <details>
-<summary><strong>MCP servers</strong></summary>
+<summary><strong>Subscription Tier</strong></summary>
+
+Set your plan manually (auto-detection isn't reliable):
+
+```json
+{
+  "components": {
+    "tier": {
+      "override": "max"
+    }
+  }
+}
+```
+
+Options: `"pro"`, `"max"`, `"api"`
+
+</details>
+
+<details>
+<summary><strong>MCP Servers</strong></summary>
 
 ```json
 {
   "components": {
     "mcp": {
       "showNames": true,
-      "showOnlyProblems": true,
+      "showOnlyProblems": false,
       "maxDisplay": 4
     }
   }
 }
 ```
 
-- `showNames: true` — list each server with status icon
-- `showOnlyProblems: true` — hide MCP line when everything is healthy
-- Failed/disconnected servers always show in red
+| Option | Effect |
+|--------|--------|
+| `showNames: true` | List each server with status |
+| `showOnlyProblems: true` | Hide line when all servers healthy |
+| `maxDisplay: 4` | Limit servers shown ("+N more" for rest) |
 
 | Icon | Status |
 |------|--------|
-| `✓` | Connected |
-| `✗` | Disconnected |
-| `○` | Disabled |
-| `▲` | Error |
+| ✓ | Connected |
+| ✗ | Disconnected (red) |
+| ○ | Disabled |
+| ▲ | Error |
 
 </details>
 
@@ -160,11 +158,11 @@ Enable `showTokens` to see `↓input ↑output ⟳cache` breakdown.
 
 | Setting | Result |
 |---------|--------|
-| Both `true` (default) | `⚡Hooks 8 Submit:3 timezone-context,best-practices Post:2 lint-check` |
-| `showNames: false` | `⚡Hooks 8 Submit:3 Post:2 Start:2 End:1` |
+| Both `true` | `⚡Hooks 8 Submit:3 timezone-context,best-practices` |
+| `showNames: false` | `⚡Hooks 8 Submit:3 Post:2 End:1` |
 | Both `false` | `⚡Hooks 8` |
 
-Broken hooks (invalid file paths) always show in red with `▲`.
+Broken hooks (invalid paths) show in red with ▲.
 
 </details>
 
@@ -182,53 +180,60 @@ Broken hooks (invalid file paths) always show in red with `▲`.
 }
 ```
 
-Colors change automatically: green < $1, yellow $1-$2, peach $2-$5, red > $5. Burn rate appears after the session is longer than 1 minute.
+Color thresholds: green < $1, yellow $1-$2, orange $2-$5, red > $5
 
 </details>
 
 <details>
-<summary><strong>Subscription tier</strong></summary>
+<summary><strong>Layout</strong></summary>
 
-Disabled by default. There's no official way to detect your plan, so set it manually:
+The 5-line structure is fixed. You can toggle lines and change separators:
 
 ```json
 {
-  "components": {
-    "tier": {
-      "enabled": true,
-      "override": "max"
-    }
+  "lines": {
+    "hooks": { "enabled": false },
+    "engine": { "separator": " | " }
   }
 }
 ```
 
-Options: `"pro"`, `"max"`, `"api"`.
+| Line | Key | Toggleable |
+|------|-----|------------|
+| Identity | — | No (branding) |
+| Git | `git` | Yes |
+| Engine | `engine` | Yes |
+| MCP | `mcp` | Yes |
+| Hooks | `hooks` | Yes |
 
 </details>
 
 <details>
-<summary><strong>Other components</strong></summary>
+<summary><strong>All Components</strong></summary>
 
 | Component | Key Options |
 |-----------|-------------|
 | `model` | `showIcon: true` adds emoji per model |
 | `session` | `showDuration: true`, `showId: false` |
-| `cache` | Shows cache hit rate percentage |
-| `linesChanged` | Shows `+added -removed` lines changed |
-| `time` | `format: "12h"` or `"24h"`, `showTimezone: true` |
+| `cache` | Shows cache hit rate |
+| `linesChanged` | Shows `+added -removed` |
+| `time` | `format: "12h"/"24h"`, `showTimezone: true` |
 
 All components accept `"enabled": false` to hide them.
 
 </details>
 
-## Development
+## 🛠️ Development
 
 ```bash
-bun install          # Install dependencies
-bun run build        # Build to dist/
-bun run lint         # Run Biome linter
-bun run dev          # Watch mode
+git clone https://github.com/ali-nr/claude-pulse.git
+cd claude-pulse
+bun install
+bun run build
+bun test
 ```
+
+Use full path in settings: `"command": "node /path/to/claude-pulse/dist/cli.js"`
 
 ## License
 
