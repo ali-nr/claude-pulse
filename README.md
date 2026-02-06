@@ -20,11 +20,11 @@ Five lines of information, updated on every message:
 |------|---------------|
 | **Identity** | Project name + working directory |
 | **Git** | Current branch + file changes (new, modified, deleted) |
-| **Engine** | Model, context window %, token cost, session duration |
+| **Engine** | Model, remaining % until compaction, token cost, session duration |
 | **MCP** | Server connections with health status (connected, disconnected, disabled, error) |
 | **Hooks** | Active hooks by event type, with broken path detection |
 
-Context usage changes color as it fills up. Cost goes from green to red. Failed MCP servers and broken hooks are highlighted immediately.
+Context goes from green to red as it approaches compaction. Cost goes from green to red. Failed MCP servers and broken hooks are highlighted immediately.
 
 ## Install
 
@@ -90,6 +90,8 @@ The 5-line structure is fixed. You can enable/disable lines and change separator
 <details>
 <summary><strong>Context window</strong></summary>
 
+Shows remaining space until auto-compaction triggers. When it reaches 0%, Claude will compact the conversation.
+
 ```json
 {
   "components": {
@@ -105,10 +107,10 @@ The 5-line structure is fixed. You can enable/disable lines and change separator
 
 | Style | Example |
 |-------|---------|
-| `compact` | `42%` |
-| `bar` | `●●●●○○○○○○ 42%` |
-| `detailed` | `84.0k/200.0k (42%)` |
-| `both` | `●●●●○○○○○○ used:84.0k free:116.0k` |
+| `compact` | `→Compact 58%` |
+| `bar` | `●●●●●●○○○○ 58%` |
+| `detailed` | `116.0k/200.0k (58%)` |
+| `both` | `●●●●●●○○○○ free:116.0k used:84.0k` |
 
 Enable `showTokens` to see `↓input ↑output ⟳cache` breakdown.
 

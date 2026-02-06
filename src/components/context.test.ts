@@ -44,31 +44,35 @@ describe("renderContext", () => {
 			expect(result.text).toBe("");
 		});
 
-		test("should render with default config", () => {
+		test("should render with default config showing remaining percentage", () => {
+			// 30% used = 70% remaining until compaction
 			const result = renderContext(mockInput(), {}, theme);
-			expect(result.text).toContain("30%");
+			expect(result.text).toContain("70%");
 		});
 	});
 
 	describe("display styles", () => {
-		test("should render compact style as percentage only", () => {
+		test("should render compact style as remaining percentage only", () => {
+			// 30% used = 70% remaining
 			const result = renderContext(mockInput(), { style: "compact" }, theme);
-			expect(result.text).toContain("30%");
+			expect(result.text).toContain("70%");
 			expect(result.text).not.toContain("●");
 		});
 
 		test("should render bar style with filled and empty circles", () => {
+			// 30% used = 70% remaining, bar shows remaining space
 			const result = renderContext(mockInput(), { style: "bar" }, theme);
 			expect(result.text).toContain("●");
 			expect(result.text).toContain("○");
-			expect(result.text).toContain("30%");
+			expect(result.text).toContain("70%");
 		});
 
-		test("should render detailed style with token counts", () => {
+		test("should render detailed style with free token counts", () => {
+			// 60k used of 200k = 140k free, 70% remaining
 			const result = renderContext(mockInput(), { style: "detailed" }, theme);
-			expect(result.text).toContain("60.0k");
+			expect(result.text).toContain("140.0k");
 			expect(result.text).toContain("200.0k");
-			expect(result.text).toContain("30%");
+			expect(result.text).toContain("70%");
 		});
 
 		test("should render both style with bar and free/used labels", () => {
@@ -80,27 +84,35 @@ describe("renderContext", () => {
 	});
 
 	describe("color thresholds", () => {
-		test("should use green when under warn threshold", () => {
+		// Colors are based on remaining % (inverted from used)
+		// High remaining = green (safe), low remaining = red (danger)
+		test("should use green when lots of room remaining", () => {
+			// 50% used = 50% remaining, still safe
 			const result = renderContext(mockInput({ used_percentage: 50 }), { style: "compact" }, theme);
 			expect(result.text).toContain(theme.green);
 		});
 
-		test("should use yellow when at warn threshold", () => {
+		test("should use yellow when approaching warn threshold", () => {
+			// 70% used = 30% remaining, triggers warn (remaining <= 30%)
 			const result = renderContext(mockInput({ used_percentage: 70 }), { style: "compact" }, theme);
 			expect(result.text).toContain(theme.yellow);
 		});
 
 		test("should use peach when at critical threshold", () => {
+			// 85% used = 15% remaining, triggers critical (remaining <= 15%)
 			const result = renderContext(mockInput({ used_percentage: 85 }), { style: "compact" }, theme);
 			expect(result.text).toContain(theme.peach);
 		});
 
 		test("should use red when at danger threshold", () => {
+			// 95% used = 5% remaining, triggers danger (remaining <= 5%)
 			const result = renderContext(mockInput({ used_percentage: 95 }), { style: "compact" }, theme);
 			expect(result.text).toContain(theme.red);
 		});
 
 		test("should respect custom thresholds", () => {
+			// 50% used = 50% remaining
+			// Custom warn=40 means remaining <= 60% triggers warn
 			const result = renderContext(
 				mockInput({ used_percentage: 50 }),
 				{ style: "compact", thresholds: { warn: 40, critical: 60, danger: 80 } },
@@ -166,23 +178,30 @@ describe("renderContext", () => {
 	});
 
 	describe("edge cases", () => {
-		test("should handle zero percentage", () => {
+		test("should show 100% remaining when nothing used", () => {
+			// 0% used = 100% remaining
 			const result = renderContext(mockInput({ used_percentage: 0 }), { style: "compact" }, theme);
-			expect(result.text).toContain("0%");
+			expect(result.text).toContain("100%");
 		});
 
-		test("should handle 100 percentage", () => {
+		test("should show 0% remaining when fully used", () => {
+			// 100% used = 0% remaining (compaction imminent)
 			const result = renderContext(
 				mockInput({ used_percentage: 100 }),
 				{ style: "compact" },
 				theme,
 			);
-			expect(result.text).toContain("100%");
+			expect(result.text).toContain("0%");
 		});
 
 		test("should use custom label", () => {
 			const result = renderContext(mockInput(), { style: "compact", label: "Context" }, theme);
 			expect(result.text).toContain("Context");
+		});
+
+		test("should use default label →Compact", () => {
+			const result = renderContext(mockInput(), { style: "compact" }, theme);
+			expect(result.text).toContain("→Compact");
 		});
 	});
 });

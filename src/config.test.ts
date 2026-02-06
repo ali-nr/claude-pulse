@@ -23,8 +23,8 @@ describe("DEFAULT_CONFIG", () => {
 		expect(DEFAULT_CONFIG.theme).toBe("catppuccin");
 	});
 
-	test("should have tier disabled by default", () => {
-		expect(DEFAULT_CONFIG.components.tier?.enabled).toBe(false);
+	test("should have tier enabled by default", () => {
+		expect(DEFAULT_CONFIG.components.tier?.enabled).toBe(true);
 	});
 
 	test("should have model enabled by default", () => {

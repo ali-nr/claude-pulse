@@ -27,7 +27,7 @@ export const DEFAULT_CONFIG: PulseConfig = {
 	theme: "catppuccin",
 	components: {
 		tier: {
-			enabled: false,
+			enabled: true,
 			labels: { pro: "PRO", max: "MAX", api: "API" },
 		},
 		model: {
@@ -36,10 +36,10 @@ export const DEFAULT_CONFIG: PulseConfig = {
 		},
 		context: {
 			enabled: true,
-			label: "",
-			style: "compact",
+			label: "→Compact",
+			style: "bar",
 			showRate: false,
-			showTokens: false,
+			showTokens: true,
 			showCompactHint: false,
 			thresholds: { warn: 70, critical: 85, danger: 95 },
 		},
@@ -58,7 +58,7 @@ export const DEFAULT_CONFIG: PulseConfig = {
 			enabled: true,
 			label: "MCP",
 			showNames: true,
-			showOnlyProblems: true,
+			showOnlyProblems: false,
 			style: "auto",
 			icons: { connected: "✓", disconnected: "✗", disabled: "○", error: "!" },
 			maxDisplay: 4,
