@@ -56,7 +56,7 @@ export const DEFAULT_CONFIG: PulseConfig = {
 		},
 		mcp: {
 			enabled: true,
-			label: "MCP",
+			label: "⬢ MCP",
 			showNames: true,
 			showOnlyProblems: false,
 			style: "auto",

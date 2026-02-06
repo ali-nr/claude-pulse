@@ -34,7 +34,8 @@ export function renderTier(config: TierConfig, theme: Theme): ComponentOutput {
 		label = labels.api;
 	}
 
-	const text = `${color}${theme.bold}${label}${theme.reset}`;
+	const icon = "◆ ";
+	const text = `${color}${theme.bold}${icon}${label}${theme.reset}`;
 
 	return { text, action: "/usage" };
 }

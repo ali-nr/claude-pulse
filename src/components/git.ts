@@ -31,9 +31,10 @@ export function renderBranch(
 		return { text: "" };
 	}
 
+	const icon = "⎇ ";
 	const label = config.label ?? "";
 	const labelStr = label ? `${theme.teal}${label} ${theme.reset}` : "";
-	const text = `${labelStr}${theme.teal}${git.branch}${theme.reset}`;
+	const text = `${theme.teal}${icon}${theme.reset}${labelStr}${theme.teal}${git.branch}${theme.reset}`;
 	return { text };
 }
 

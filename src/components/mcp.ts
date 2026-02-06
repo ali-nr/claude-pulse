@@ -13,7 +13,7 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		return { text: "" };
 	}
 
-	const label = config.label ?? "🧩 MCP";
+	const label = config.label ?? "⬢ MCP";
 	const icons = config.icons ?? {
 		connected: "✓",
 		disconnected: "✗",

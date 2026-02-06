@@ -71,7 +71,7 @@ export function renderContext(
 		display =
 			style === "both"
 				? `${bar} ${freeLabel} ${usedLabel}`
-				: `${bar} ${Math.round(remainingPercent)}%`;
+				: `${bar} ${color}${Math.round(remainingPercent)}%${theme.reset}`;
 	} else {
 		display = `${Math.round(remainingPercent)}%`;
 	}
