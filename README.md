@@ -41,13 +41,7 @@ Restart Claude Code — the statusline appears above the input area.
 
 Five lines of information, updated on every message:
 
-```
-♥ pulse ▶ ~/dev/my-project
-⎇ main │ +2 new ~3 mod
-◆ MAX │ Opus │ →Compact ●●●●●○○○○○ 50% ↓84k ↑16k ⟳5k │ $0.50 │ 3m
-⬢ MCP 3/3: context7 ✓  deepwiki ✓  chrome-devtools ✓
-⚡Hooks 8 Submit:3 timezone-context,best-practices Post:2 lint-check
-```
+![cc-pulse statusline](assets/demo.png)
 
 | Line | Content |
 |------|---------|
