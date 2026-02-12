@@ -30,7 +30,7 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 	const maxDisplay = config.maxDisplay ?? Infinity;
 
 	if (summary.total === 0) {
-		const text = `${theme.mauve}🎯 ${label} ${theme.overlay0}0${theme.reset}`;
+		const text = `${theme.mauve}✦ ${label} ${theme.overlay0}0${theme.reset}`;
 		return { text };
 	}
 
@@ -65,7 +65,7 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 		brokenStr = ` ${theme.red}▲${brokenDisplay}${theme.reset}`;
 	}
 
-	const text = `${theme.mauve}🎯 ${label}${theme.reset}${parts.length ? ` ${parts.join(" ")}` : ""}${brokenStr}`;
+	const text = `${theme.mauve}✦ ${label}${theme.reset}${parts.length ? ` ${parts.join(" ")}` : ""}${brokenStr}`;
 	return { text };
 }
 

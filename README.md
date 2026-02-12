@@ -30,16 +30,18 @@ Restart Claude Code — the statusline appears above the input area.
 
 | Feature | Description |
 |---------|-------------|
-| **→Compact indicator** | Shows remaining % until auto-compaction — colors shift from green to red as you approach the limit |
+| **Context usage** | Shows % used with color-coded bar — green to red as you approach limits |
 | **Token breakdown** | Input ↓, output ↑, and cache ⟳ tokens at a glance |
+| **Model info** | Shows model with version (e.g., "Opus 4.5", "Sonnet 3.5") |
 | **Cost tracking** | Session cost with color coding ($1 yellow, $2 orange, $5+ red) |
 | **MCP health** | Live connection status for all MCP servers |
 | **Hook monitoring** | Active hooks by event type, with broken path detection |
+| **Skills display** | Shows your custom slash commands/skills |
 | **Git status** | Branch name + new/modified/deleted file counts |
 
 ## 📊 What You Get
 
-Five lines of information, updated on every message:
+Six lines of information, updated on every message:
 
 ![cc-pulse statusline](assets/demo.png)
 
@@ -47,9 +49,10 @@ Five lines of information, updated on every message:
 |------|---------|
 | **Identity** | Project name + working directory |
 | **Git** | Branch + file changes (new, modified, deleted) |
-| **Engine** | Tier, model, context remaining, tokens, cost, duration |
+| **Engine** | Tier, model, context used, tokens, cost, duration |
 | **MCP** | Server count + individual status (✓ connected, ✗ disconnected, ○ disabled) |
 | **Hooks** | Hook count by event type, with broken path warnings |
+| **Skills** | Custom slash commands count + names |
 
 ## ⚙️ Configuration
 
@@ -58,7 +61,7 @@ Create `~/.config/claude-pulse/config.json` to customize. Only include what you 
 <details>
 <summary><strong>Context Window</strong></summary>
 
-The `→Compact` indicator shows remaining space until auto-compaction. When it reaches 0%, Claude compacts the conversation.
+Shows how much of the context window is used. Colors shift as usage increases.
 
 ```json
 {
@@ -74,16 +77,16 @@ The `→Compact` indicator shows remaining space until auto-compaction. When it 
 
 | Style | Example |
 |-------|---------|
-| `bar` (default) | `→Compact ●●●●●●○○○○ 58%` |
-| `compact` | `→Compact 58%` |
-| `detailed` | `→Compact 116.0k/200.0k (58%)` |
-| `both` | `●●●●●●○○○○ free:116.0k used:84.0k` |
+| `bar` (default) | `Used ●●●●●●○○○○ 58%` |
+| `percent` | `Used 58%` |
+| `detailed` | `Used 116.0k/200.0k (58%)` |
+| `both` | `●●●●●●○○○○ 116.0k / 200.0k` |
 
-**Color thresholds** — as remaining % drops:
-- **Green**: > 30% remaining (safe)
-- **Yellow**: 30% remaining (warn)
-- **Orange**: 15% remaining (critical)
-- **Red + 🔴**: 5% remaining (danger)
+**Color thresholds** — as used % increases:
+- **Green**: < 70% used (safe)
+- **Yellow**: 70% used (warn)
+- **Orange**: 85% used (critical)
+- **Red + 🔴**: 95% used (danger)
 
 </details>
 
@@ -179,9 +182,36 @@ Color thresholds: green < $1, yellow $1-$2, orange $2-$5, red > $5
 </details>
 
 <details>
+<summary><strong>Skills</strong></summary>
+
+Shows your custom slash commands from `~/.claude/skills/` and `.claude/skills/`.
+
+```json
+{
+  "components": {
+    "skills": {
+      "showNames": true,
+      "showCount": true,
+      "maxDisplay": 5
+    }
+  }
+}
+```
+
+| Setting | Result |
+|---------|--------|
+| Both `true` | `✦ Skills 5 commit,pr,branch` |
+| `showNames: false` | `✦ Skills 5` |
+| `maxDisplay: 3` | Shows first 3 names + overflow count |
+
+Broken skills (missing SKILL.md or invalid frontmatter) show in red with ▲.
+
+</details>
+
+<details>
 <summary><strong>Layout</strong></summary>
 
-The 5-line structure is fixed. You can toggle lines and change separators:
+The 6-line structure is fixed. You can toggle lines and change separators:
 
 ```json
 {
@@ -199,6 +229,7 @@ The 5-line structure is fixed. You can toggle lines and change separators:
 | Engine | `engine` | Yes |
 | MCP | `mcp` | Yes |
 | Hooks | `hooks` | Yes |
+| Skills | `skills` | Yes |
 
 </details>
 

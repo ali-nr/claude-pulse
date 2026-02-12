@@ -27,9 +27,9 @@ describe("renderSkills", () => {
 			expect(result.text).toContain("Commands");
 		});
 
-		test("should include emoji icon", () => {
+		test("should include star icon", () => {
 			const result = renderSkills({}, theme);
-			expect(result.text).toContain("🎯");
+			expect(result.text).toContain("✦");
 		});
 	});
 });
