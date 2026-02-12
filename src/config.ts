@@ -21,6 +21,7 @@ const FIXED_LINES: LineDefinition[] = [
 	},
 	{ name: "mcp", enabled: true, components: ["mcp"], separator: " │ " },
 	{ name: "hooks", enabled: true, components: ["hooks"], separator: " │ " },
+	{ name: "skills", enabled: true, components: ["skills"], separator: " │ " },
 ];
 
 export const DEFAULT_CONFIG: PulseConfig = {
@@ -36,7 +37,7 @@ export const DEFAULT_CONFIG: PulseConfig = {
 		},
 		context: {
 			enabled: true,
-			label: "→Compact",
+			label: "Used",
 			style: "bar",
 			showRate: false,
 			showTokens: true,
@@ -83,6 +84,12 @@ export const DEFAULT_CONFIG: PulseConfig = {
 		},
 		cache: {
 			enabled: true,
+		},
+		skills: {
+			enabled: true,
+			label: "Skills",
+			showCount: true,
+			showNames: true,
 		},
 	},
 	interactive: {

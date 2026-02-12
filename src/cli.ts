@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// @ts-expect-error — bun build resolves JSON imports at bundle time
 import packageJson from "../package.json";
 import {
 	renderBranch,
@@ -15,6 +14,7 @@ import {
 	renderName,
 	renderOutputStyle,
 	renderSession,
+	renderSkills,
 	renderStatus,
 	renderSystem,
 	renderTier,
@@ -133,6 +133,8 @@ function renderComponent(
 			return renderHooks(config.components.hooks ?? {}, theme);
 		case "cache":
 			return renderCache(input, config.components.cache ?? {}, theme);
+		case "skills":
+			return renderSkills(config.components.skills ?? {}, theme);
 		default:
 			return { text: "" };
 	}

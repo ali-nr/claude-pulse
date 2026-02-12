@@ -11,7 +11,9 @@ bun.lockb
 .env.*
 
 # Agent/tool directories
-.beads/
+.beads/*
+!.beads/issues.jsonl
+!.beads/.gitignore
 .claude/
 .codex/
 .gemini/

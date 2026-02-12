@@ -10,6 +10,7 @@ export { renderModel } from "./model";
 export { renderName } from "./name";
 export { renderOutputStyle } from "./output-style";
 export { renderSession } from "./session";
+export { renderSkills } from "./skills";
 export { renderSystem } from "./system";
 export { renderTier } from "./tier";
 export { renderTime } from "./time";

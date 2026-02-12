@@ -23,57 +23,47 @@ export function renderContext(
 	const ctx = input.context_window;
 	const thresholds = config.thresholds ?? { warn: 70, critical: 85, danger: 95 };
 	const usedPercent = ctx?.used_percentage ?? 0;
-	const remainingPercent = 100 - usedPercent; // Distance to compaction
 
-	// Determine color based on how close to compaction (inverted logic)
-	// Low remaining = danger, high remaining = safe
+	// Determine color based on how much context is used
+	// Higher usage = more urgent color
 	let color = theme.green;
 	let indicator = "";
-	if (remainingPercent <= 100 - thresholds.danger) {
-		// Less than 5% remaining = danger
+	if (usedPercent >= thresholds.danger) {
 		color = theme.red;
 		indicator = " 🔴";
-	} else if (remainingPercent <= 100 - thresholds.critical) {
-		// Less than 15% remaining = critical
+	} else if (usedPercent >= thresholds.critical) {
 		color = theme.peach;
 		indicator = " ⚠️";
-	} else if (remainingPercent <= 100 - thresholds.warn) {
-		// Less than 30% remaining = warn
+	} else if (usedPercent >= thresholds.warn) {
 		color = theme.yellow;
 	}
 
-	const label = config.label ?? "→Compact";
+	const label = config.label ?? "Used";
 	const style = config.style ?? "bar";
 
 	let display: string;
-	if (style === "compact") {
-		display = `${Math.round(remainingPercent)}%`;
+	if (style === "percent") {
+		display = `${Math.round(usedPercent)}%`;
 	} else if (style === "detailed" && ctx) {
-		// Detailed: show free tokens and remaining percentage
+		// Detailed: show used tokens and used percentage
 		const totalUsed = ctx.total_input_tokens + ctx.total_output_tokens;
 		const windowSize = ctx.context_window_size;
-		const freeTokens = Math.max(0, windowSize - totalUsed);
-		display = `${formatTokens(freeTokens)}/${formatTokens(windowSize)} (${Math.round(remainingPercent)}%)`;
+		display = `${formatTokens(totalUsed)}/${formatTokens(windowSize)} (${Math.round(usedPercent)}%)`;
 	} else if (style === "bar" || style === "both") {
 		const windowSize = ctx?.context_window_size || 200000;
 		const totalUsed = (ctx?.total_input_tokens || 0) + (ctx?.total_output_tokens || 0);
-		const freeTokens = Math.max(0, windowSize - totalUsed);
 
-		// Build bar (10 segments) - shows remaining space, not used
-		const remaining = Math.round(remainingPercent / 10);
-		const depleted = 10 - remaining;
-		const bar = `${color}${"●".repeat(remaining)}${theme.reset}${"○".repeat(depleted)}`;
-
-		// Build labels: free:Xk used:Yk (Z% to compact)
-		const freeLabel = `${color}free:${formatTokens(freeTokens)}${theme.reset}`;
-		const usedLabel = `${theme.overlay0}used:${formatTokens(totalUsed)}${theme.reset}`;
+		// Build bar (10 segments) - shows how much is used
+		const used = Math.round(usedPercent / 10);
+		const free = 10 - used;
+		const bar = `${color}${"●".repeat(used)}${theme.reset}${"○".repeat(free)}`;
 
 		display =
 			style === "both"
-				? `${bar} ${freeLabel} ${usedLabel}`
-				: `${bar} ${color}${Math.round(remainingPercent)}%${theme.reset}`;
+				? `${bar} ${color}${formatTokens(totalUsed)}${theme.reset} ${theme.overlay0}/ ${formatTokens(windowSize)}${theme.reset}`
+				: `${bar} ${color}${Math.round(usedPercent)}%${theme.reset}`;
 	} else {
-		display = `${Math.round(remainingPercent)}%`;
+		display = `${Math.round(usedPercent)}%`;
 	}
 
 	// Show token breakdown if enabled
@@ -101,9 +91,9 @@ export function renderContext(
 		}
 	}
 
-	// Compact hint - show when remaining is low (20% or less)
+	// Compact hint - show when usage is high (80% or more)
 	let hint = "";
-	if (config.showCompactHint && remainingPercent <= 20) {
+	if (config.showCompactHint && usedPercent >= 80) {
 		hint = " 💡/compact";
 	}
 

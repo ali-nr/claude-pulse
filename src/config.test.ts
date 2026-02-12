@@ -34,9 +34,9 @@ describe("DEFAULT_CONFIG", () => {
 
 describe("getLines", () => {
 	describe("default behavior", () => {
-		test("should return 5 lines", () => {
+		test("should return 6 lines", () => {
 			const lines = getLines(DEFAULT_CONFIG);
-			expect(lines).toHaveLength(5);
+			expect(lines).toHaveLength(6);
 		});
 
 		test("should have identity as first line", () => {

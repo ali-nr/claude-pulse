@@ -96,7 +96,7 @@ export type ModelConfig = z.infer<typeof ModelConfigSchema>;
 export const ContextConfigSchema = z.object({
 	enabled: z.boolean().optional(),
 	label: z.string().optional(),
-	style: z.enum(["bar", "percent", "both", "detailed", "compact"]).optional(),
+	style: z.enum(["bar", "percent", "both", "detailed"]).optional(),
 	showRate: z.boolean().optional(),
 	showCompactHint: z.boolean().optional(),
 	showTokens: z.boolean().optional(),
@@ -219,6 +219,16 @@ export const CacheConfigSchema = z.object({
 
 export type CacheConfig = z.infer<typeof CacheConfigSchema>;
 
+export const SkillsConfigSchema = z.object({
+	enabled: z.boolean().optional(),
+	label: z.string().optional(),
+	showCount: z.boolean().optional(),
+	showNames: z.boolean().optional(),
+	maxDisplay: z.number().optional(),
+});
+
+export type SkillsConfig = z.infer<typeof SkillsConfigSchema>;
+
 export const ComponentConfigsSchema = z.object({
 	tier: TierConfigSchema.optional(),
 	model: ModelConfigSchema.optional(),
@@ -238,6 +248,7 @@ export const ComponentConfigsSchema = z.object({
 	linesChanged: LinesChangedConfigSchema.optional(),
 	hooks: HooksConfigSchema.optional(),
 	cache: CacheConfigSchema.optional(),
+	skills: SkillsConfigSchema.optional(),
 });
 
 export type ComponentConfigs = z.infer<typeof ComponentConfigsSchema>;
@@ -256,6 +267,7 @@ export const LinesConfigSchema = z.object({
 	engine: LineOverrideSchema.optional(),
 	mcp: LineOverrideSchema.optional(),
 	hooks: LineOverrideSchema.optional(),
+	skills: LineOverrideSchema.optional(),
 });
 
 export type LinesConfig = z.infer<typeof LinesConfigSchema>;
