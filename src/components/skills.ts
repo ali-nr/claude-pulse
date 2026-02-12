@@ -65,7 +65,7 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 		brokenStr = ` ${theme.red}▲${brokenDisplay}${theme.reset}`;
 	}
 
-	const text = `${theme.mauve}🎯 ${label}${theme.reset} ${parts.join(" ")}${brokenStr}`;
+	const text = `${theme.mauve}🎯 ${label}${theme.reset}${parts.length ? ` ${parts.join(" ")}` : ""}${brokenStr}`;
 	return { text };
 }
 
