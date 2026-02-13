@@ -38,7 +38,7 @@ export const DEFAULT_CONFIG: PulseConfig = {
 		context: {
 			enabled: true,
 			label: "Used",
-			style: "bar",
+			style: "percent",
 			showRate: false,
 			showTokens: true,
 			showCompactHint: false,
