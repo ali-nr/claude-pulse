@@ -122,9 +122,10 @@ function getMcpServers(): McpServer[] {
 	} else {
 		// Try fetching fresh data
 		try {
-			const output = execSync("claude mcp list 2>/dev/null", {
+			const output = execSync("claude mcp list", {
 				encoding: "utf-8",
 				timeout: 3000,
+				stdio: ["pipe", "pipe", "ignore"],
 			});
 
 			servers = parseMcpOutput(output);

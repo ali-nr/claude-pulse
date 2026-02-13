@@ -73,9 +73,10 @@ function getGitInfo(): { branch: string; status: string; statusLines: StatusLine
 	const statusLines: StatusLines = { added: 0, modified: 0, deleted: 0 };
 
 	try {
-		branch = execSync("git branch --show-current 2>/dev/null", {
+		branch = execSync("git branch --show-current", {
 			encoding: "utf-8",
 			timeout: 1000,
+			stdio: ["pipe", "pipe", "ignore"],
 		}).trim();
 	} catch {
 		// Not a git repo or git not available
@@ -83,9 +84,10 @@ function getGitInfo(): { branch: string; status: string; statusLines: StatusLine
 
 	if (branch) {
 		try {
-			const porcelain = execSync("git status --porcelain 2>/dev/null", {
+			const porcelain = execSync("git status --porcelain", {
 				encoding: "utf-8",
 				timeout: 1000,
+				stdio: ["pipe", "pipe", "ignore"],
 			});
 
 			const lines = porcelain.trim().split("\n").filter(Boolean);
