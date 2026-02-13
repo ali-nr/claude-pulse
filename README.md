@@ -32,7 +32,7 @@ Restart Claude Code — the statusline appears above the input area.
 |---------|-------------|
 | **Context usage** | Shows % used with color-coded bar — green to red as you approach limits |
 | **Token breakdown** | Input ↓, output ↑, and cache ⟳ tokens at a glance |
-| **Model info** | Shows model with version (e.g., "Opus 4.5", "Sonnet 3.5") |
+| **Model info** | Shows model with version (e.g., "Opus 4.6", "Sonnet 4.5") |
 | **Cost tracking** | Session cost with color coding ($1 yellow, $2 orange, $5+ red) |
 | **MCP health** | Live connection status for all MCP servers |
 | **Hook monitoring** | Active hooks by event type, with broken path detection |
@@ -77,8 +77,8 @@ Shows how much of the context window is used. Colors shift as usage increases.
 
 | Style | Example |
 |-------|---------|
-| `bar` (default) | `Used ●●●●●●○○○○ 58%` |
-| `percent` | `Used 58%` |
+| `bar` | `Used ●●●●●●○○○○ 58%` |
+| `percent` (default) | `Used 58%` |
 | `detailed` | `Used 116.0k/200.0k (58%)` |
 | `both` | `●●●●●●○○○○ 116.0k / 200.0k` |
 
