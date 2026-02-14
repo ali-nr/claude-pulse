@@ -24,7 +24,7 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Restart Claude Code — the statusline appears above the input area.
+Restart Claude Code — the statusline appears below the input area.
 
 ## ✨ Features
 
