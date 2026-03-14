@@ -128,7 +128,7 @@ Configuration:
 
 	if (config.dividers) {
 		const divider = `${theme.overlay0}${"─".repeat(termWidth)}${theme.reset}`;
-		console.log(outputLines.join(`\n${divider}\n`) + `\n${divider}`);
+		console.log(`${outputLines.join(`\n${divider}\n`)}\n${divider}`);
 	} else {
 		console.log(outputLines.join("\n"));
 	}

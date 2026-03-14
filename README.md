@@ -5,7 +5,13 @@
 
 A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-![cc-pulse statusline](assets/demo.png)
+**Full mode** — names, groups, token breakdown:
+
+![cc-pulse full mode](assets/demo-full.png)
+
+**Compact mode** — counts only, minimal footprint:
+
+![cc-pulse compact mode](assets/demo-compact.png)
 
 ## Quick Start
 
@@ -41,8 +47,6 @@ Restart Claude Code — the statusline appears below the input area.
 | **Responsive layout** | Width-aware wrapping + compact mode for smaller screens |
 
 ## What You Get
-
-Six lines of information, updated on every message:
 
 | Line | Content |
 |------|---------|
