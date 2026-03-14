@@ -17,12 +17,12 @@ import {
 	renderSkills,
 	renderStatus,
 	renderSystem,
-	renderTier,
 	renderTime,
 } from "./components";
 import { getLines, loadConfig } from "./config";
 import { type ClaudeStatusInput, type ComponentOutput, parseClaudeInput } from "./schema";
 import { catppuccin } from "./themes/catppuccin";
+import { getTerminalWidth, wrapParts } from "./truncate";
 
 const VERSION = packageJson.version ?? "1.0.0";
 
@@ -69,29 +69,69 @@ Configuration:
 
 	// Render fixed line layout with user overrides
 	const lines = getLines(config);
+	const termWidth = getTerminalWidth();
+
+	// Compact mode: counts only, no names/details
+	if (config.compact) {
+		if (config.components.skills) {
+			config.components.skills.showNames = false;
+		}
+		if (config.components.hooks) {
+			config.components.hooks.showNames = false;
+			config.components.hooks.showCount = false;
+		}
+		if (config.components.mcp) {
+			config.components.mcp.showNames = false;
+		}
+		if (config.components.context) {
+			config.components.context.showTokens = false;
+			config.components.context.showRate = false;
+		}
+		if (config.components.cost) {
+			config.components.cost.showBurnRate = false;
+			config.components.cost.showProjection = false;
+		}
+		if (config.components.cwd) {
+			config.components.cwd.maxLength = 15;
+		}
+	}
 	const outputLines: string[] = [];
 
 	for (const line of lines) {
 		if (!line.enabled) continue;
 
-		const parts: string[] = [];
 		const separator = ` ${theme.overlay2}│${theme.reset} `;
 		const sep = line.separator ?? separator;
 
+		// Collect component outputs
+		const outputs: ComponentOutput[] = [];
 		for (const componentName of line.components) {
 			const output = renderComponent(componentName, input, config, theme);
 			if (output.text) {
-				parts.push(output.text);
+				outputs.push(output);
 			}
 		}
 
-		if (parts.length > 0) {
-			outputLines.push(parts.join(sep));
+		if (outputs.length === 0) continue;
+
+		// For lines with a single component that has header+items, wrap items
+		if (outputs.length === 1 && outputs[0].header && outputs[0].items?.length) {
+			const { header, items } = outputs[0];
+			const rendered = wrapParts([header, ...items], " ", termWidth);
+			outputLines.push(rendered);
+		} else {
+			// Standard: wrap at component boundaries
+			const parts = outputs.map((o) => o.text);
+			outputLines.push(wrapParts(parts, sep, termWidth));
 		}
 	}
 
-	// Output all lines (Claude Code only uses first line, but we support multi-line)
-	console.log(outputLines.join("\n"));
+	if (config.dividers) {
+		const divider = `${theme.overlay0}${"─".repeat(termWidth)}${theme.reset}`;
+		console.log(outputLines.join(`\n${divider}\n`) + `\n${divider}`);
+	} else {
+		console.log(outputLines.join("\n"));
+	}
 }
 
 function renderComponent(
@@ -101,8 +141,6 @@ function renderComponent(
 	theme: typeof catppuccin,
 ): ComponentOutput {
 	switch (name) {
-		case "tier":
-			return renderTier(config.components.tier ?? {}, theme);
 		case "model":
 			return renderModel(input, config.components.model ?? {}, theme);
 		case "context":

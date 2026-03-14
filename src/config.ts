@@ -16,7 +16,7 @@ const FIXED_LINES: LineDefinition[] = [
 	{
 		name: "engine",
 		enabled: true,
-		components: ["tier", "model", "context", "cost", "session"],
+		components: ["model", "context", "cost", "session"],
 		separator: " │ ",
 	},
 	{ name: "mcp", enabled: true, components: ["mcp"], separator: " │ " },
@@ -27,13 +27,9 @@ const FIXED_LINES: LineDefinition[] = [
 export const DEFAULT_CONFIG: PulseConfig = {
 	theme: "catppuccin",
 	components: {
-		tier: {
-			enabled: true,
-			labels: { pro: "PRO", max: "MAX", api: "API" },
-		},
 		model: {
 			enabled: true,
-			showIcon: false,
+			showIcon: true,
 		},
 		context: {
 			enabled: true,
@@ -138,6 +134,8 @@ function mergeConfig(target: PulseConfig, source: Partial<PulseConfig>): PulseCo
 	const result = { ...target };
 
 	if (source.theme !== undefined) result.theme = source.theme;
+	if (source.compact !== undefined) result.compact = source.compact;
+	if (source.dividers !== undefined) result.dividers = source.dividers;
 	if (source.lines !== undefined) result.lines = source.lines;
 	if (source.interactive !== undefined) result.interactive = source.interactive;
 	if (source.reactive !== undefined) result.reactive = source.reactive;

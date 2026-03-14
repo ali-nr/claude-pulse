@@ -65,7 +65,7 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 	const displayServers = servers.slice(0, maxDisplay);
 	const remaining = servers.length - maxDisplay;
 
-	const serverParts = displayServers.map((server) => {
+	const serverItems = displayServers.map((server) => {
 		let icon: string;
 		let color: string;
 
@@ -90,13 +90,13 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		return `${color}${server.name} ${icon}${theme.reset}`;
 	});
 
-	let serverStr = serverParts.join("  ");
 	if (remaining > 0) {
-		serverStr += `  ${theme.sky}+${remaining} more${theme.reset}`;
+		serverItems.push(`${theme.sky}+${remaining} more${theme.reset}`);
 	}
 
 	// Show count in label
 	const countStr = `${connectedCount}/${servers.length}`;
+	const header = `${theme.sky}${label} ${theme.green}${countStr}${theme.reset}:`;
 
 	// If showNames is false, just show compact count
 	if (config.showNames === false) {
@@ -104,9 +104,8 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		return { text, action: "/mcp" };
 	}
 
-	const text = `${theme.sky}${label} ${theme.green}${countStr}${theme.reset}: ${serverStr}`;
-
-	return { text, action: "/mcp" };
+	const text = `${header} ${serverItems.join("  ")}`;
+	return { text, header, items: serverItems, action: "/mcp" };
 }
 
 function getMcpServers(): McpServer[] {

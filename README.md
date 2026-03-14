@@ -7,7 +7,7 @@ A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/clau
 
 ![cc-pulse statusline](assets/demo.png)
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 npm install -g cc-pulse
@@ -26,37 +26,76 @@ Add to `~/.claude/settings.json`:
 
 Restart Claude Code — the statusline appears below the input area.
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
 | **Context usage** | Shows % used with color-coded bar — green to red as you approach limits |
-| **Token breakdown** | Input ↓, output ↑, and cache ⟳ tokens at a glance |
-| **Model info** | Shows model with version (e.g., "Opus 4.6", "Sonnet 4.5") |
+| **Token breakdown** | Input, output, and cache tokens at a glance |
+| **Model info** | Shows model with version (e.g., "◆ Opus 4.6", "◆ Sonnet 4") |
 | **Cost tracking** | Session cost with color coding ($1 yellow, $2 orange, $5+ red) |
 | **MCP health** | Live connection status for all MCP servers |
 | **Hook monitoring** | Active hooks by event type, with broken path detection |
-| **Skills display** | Shows your custom slash commands/skills |
+| **Skills display** | Adaptive display — individual names, prefix grouping, or compact counts |
 | **Git status** | Branch name + new/modified/deleted file counts |
+| **Responsive layout** | Width-aware wrapping + compact mode for smaller screens |
 
-## 📊 What You Get
+## What You Get
 
 Six lines of information, updated on every message:
-
-![cc-pulse statusline](assets/demo.png)
 
 | Line | Content |
 |------|---------|
 | **Identity** | Project name + working directory |
 | **Git** | Branch + file changes (new, modified, deleted) |
-| **Engine** | Tier, model, context used, tokens, cost, duration |
+| **Engine** | Model, context used, tokens, cost, duration |
 | **MCP** | Server count + individual status (✓ connected, ✗ disconnected, ○ disabled) |
 | **Hooks** | Hook count by event type, with broken path warnings |
-| **Skills** | Custom slash commands count + names |
+| **Skills** | Adaptive: names when few, prefix groups when many |
 
-## ⚙️ Configuration
+## Responsive Display
+
+The statusline adapts to your setup automatically:
+
+**Skills** — adapts based on count:
+- **10 or fewer**: lists all names — `✦ Skills 5 beads,excalidraw,mermaid,tmux,repomix`
+- **More than 10 with shared prefixes**: groups them — `✦ Skills 89 bmad:77 beads,excalidraw,mermaid,...`
+- **More than 10, no groups**: caps at 10 names with overflow — `✦ Skills 15 a,b,c,d,e,f,g,h,i,j +5`
+
+**Hooks** — adapts based on total count:
+- **6 or fewer**: shows all names per event — `⚡Hooks 4 Submit:2 lint,format Post:2 test,deploy`
+- **More than 6**: caps names to 3 per group — `⚡Hooks 12 Submit:5 lint,format,check +2`
+
+**Width-aware wrapping** — when a line exceeds terminal width, components wrap onto indented continuation lines instead of being cut off.
+
+**Compact mode** — toggle with `/pulse-compact` or set in config:
+```json
+{
+  "compact": true
+}
+```
+
+In compact mode, everything collapses to counts only:
+- `⬢ MCP 3/4` | `⚡Hooks 8` | `✦ Skills 89` | `Used 30%` | `$2.50`
+
+## Configuration
 
 Create `~/.config/claude-pulse/config.json` to customize. Only include what you want to change.
+
+<details>
+<summary><strong>Compact Mode</strong></summary>
+
+Minimal display showing only counts and essential info. Toggle with the `/pulse-compact` slash command, or set manually:
+
+```json
+{
+  "compact": true
+}
+```
+
+When enabled: skills, hooks, and MCP show counts only; context hides token breakdown; cost hides burn rate; CWD shortens.
+
+</details>
 
 <details>
 <summary><strong>Context Window</strong></summary>
@@ -86,26 +125,7 @@ Shows how much of the context window is used. Colors shift as usage increases.
 - **Green**: < 70% used (safe)
 - **Yellow**: 70% used (warn)
 - **Orange**: 85% used (critical)
-- **Red + 🔴**: 95% used (danger)
-
-</details>
-
-<details>
-<summary><strong>Subscription Tier</strong></summary>
-
-Set your plan manually (auto-detection isn't reliable):
-
-```json
-{
-  "components": {
-    "tier": {
-      "override": "max"
-    }
-  }
-}
-```
-
-Options: `"pro"`, `"max"`, `"api"`
+- **Red**: 95% used (danger)
 
 </details>
 
@@ -159,6 +179,8 @@ Options: `"pro"`, `"max"`, `"api"`
 | `showNames: false` | `⚡Hooks 8 Submit:3 Post:2 End:1` |
 | Both `false` | `⚡Hooks 8` |
 
+When you have many hooks (>6), names are automatically capped to 3 per event group with a `+N` overflow indicator.
+
 Broken hooks (invalid paths) show in red with ▲.
 
 </details>
@@ -198,13 +220,24 @@ Shows your custom slash commands from `~/.claude/skills/` and `.claude/skills/`.
 }
 ```
 
-| Setting | Result |
-|---------|--------|
-| Both `true` | `✦ Skills 5 commit,pr,branch` |
-| `showNames: false` | `✦ Skills 5` |
-| `maxDisplay: 3` | Shows first 3 names + overflow count |
+The display adapts automatically based on how many skills you have — see [Responsive Display](#responsive-display) above.
 
 Broken skills (missing SKILL.md or invalid frontmatter) show in red with ▲.
+
+</details>
+
+<details>
+<summary><strong>Dividers</strong></summary>
+
+Add horizontal line separators between status sections:
+
+```json
+{
+  "dividers": true
+}
+```
+
+Off by default.
 
 </details>
 
@@ -238,7 +271,7 @@ The 6-line structure is fixed. You can toggle lines and change separators:
 
 | Component | Key Options |
 |-----------|-------------|
-| `model` | `showIcon: true` adds emoji per model |
+| `model` | `showIcon: true` (default), custom `icons: { opus, sonnet, haiku }` |
 | `session` | `showDuration: true`, `showId: false` |
 | `cache` | Shows cache hit rate |
 | `linesChanged` | Shows `+added -removed` |
@@ -248,7 +281,17 @@ All components accept `"enabled": false` to hide them.
 
 </details>
 
-## 🛠️ Development
+## Slash Commands
+
+cc-pulse ships with a skill you can install to your Claude Code skills directory:
+
+| Command | Description |
+|---------|-------------|
+| `/pulse-compact` | Toggle compact mode on/off |
+
+To install, copy `skills/pulse-compact/` to `~/.claude/skills/` or your project's `.claude/skills/`.
+
+## Development
 
 ```bash
 git clone https://github.com/ali-nr/claude-pulse.git

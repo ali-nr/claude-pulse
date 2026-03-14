@@ -5,7 +5,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { catppuccin as theme } from "../themes/catppuccin";
-import { parseFrontmatter, renderSkills } from "./skills";
+import { groupByPrefix, parseFrontmatter, renderSkills } from "./skills";
 
 describe("renderSkills", () => {
 	describe("initialization", () => {
@@ -31,6 +31,42 @@ describe("renderSkills", () => {
 			const result = renderSkills({}, theme);
 			expect(result.text).toContain("✦");
 		});
+	});
+});
+
+describe("groupByPrefix", () => {
+	test("should group names sharing a prefix when count >= minCount", () => {
+		const names = ["bmad-dev", "bmad-pm", "bmad-qa", "beads", "tmux"];
+		const result = groupByPrefix(names, 3);
+		expect(result.groups).toEqual({ bmad: ["bmad-dev", "bmad-pm", "bmad-qa"] });
+		expect(result.ungrouped).toEqual(["beads", "tmux"]);
+	});
+
+	test("should not group when below minCount", () => {
+		const names = ["bmad-dev", "bmad-pm", "beads", "tmux"];
+		const result = groupByPrefix(names, 3);
+		expect(result.groups).toEqual({});
+		expect(result.ungrouped.sort()).toEqual(["beads", "bmad-dev", "bmad-pm", "tmux"]);
+	});
+
+	test("should handle colon-separated prefixes", () => {
+		const names = ["agent-vibes:mute", "agent-vibes:unmute", "agent-vibes:set", "beads"];
+		const result = groupByPrefix(names, 3);
+		expect(result.groups["agent-vibes"]).toHaveLength(3);
+		expect(result.ungrouped).toEqual(["beads"]);
+	});
+
+	test("should return all ungrouped for unique names", () => {
+		const names = ["beads", "tmux", "mermaid"];
+		const result = groupByPrefix(names, 2);
+		expect(result.groups).toEqual({});
+		expect(result.ungrouped).toEqual(["beads", "tmux", "mermaid"]);
+	});
+
+	test("should handle empty input", () => {
+		const result = groupByPrefix([], 3);
+		expect(result.groups).toEqual({});
+		expect(result.ungrouped).toEqual([]);
 	});
 });
 

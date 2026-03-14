@@ -10,7 +10,8 @@ import type { Theme } from "../themes/catppuccin";
  *   claude-3-haiku-20240307 → { family: "haiku", version: "3" }
  */
 export function parseModelId(modelId: string): { family: string; version: string } | null {
-	const id = modelId.toLowerCase();
+	// Strip context window suffix like [1m], [200k], etc.
+	const id = modelId.toLowerCase().replace(/\[.*\]$/, "");
 
 	// New format: claude-{family}-{major}-{minor}-{date} (e.g., claude-opus-4-5-20251101)
 	const newFormat = id.match(/^claude-(\w+)-(\d+)-(\d+)-\d+$/);
@@ -23,6 +24,20 @@ export function parseModelId(modelId: string): { family: string; version: string
 	const newFormatNoMinor = id.match(/^claude-(\w+)-(\d+)-\d{8}$/);
 	if (newFormatNoMinor) {
 		const [, family, major] = newFormatNoMinor;
+		return { family, version: major };
+	}
+
+	// Short alias with minor: claude-{family}-{major}-{minor} (e.g., claude-opus-4-6)
+	const shortWithMinor = id.match(/^claude-(\w+)-(\d+)-(\d+)$/);
+	if (shortWithMinor) {
+		const [, family, major, minor] = shortWithMinor;
+		return { family, version: `${major}.${minor}` };
+	}
+
+	// Short alias without minor: claude-{family}-{major} (e.g., claude-sonnet-4)
+	const shortNoMinor = id.match(/^claude-(\w+)-(\d+)$/);
+	if (shortNoMinor) {
+		const [, family, major] = shortNoMinor;
 		return { family, version: major };
 	}
 
@@ -54,7 +69,7 @@ export function renderModel(
 
 	const modelId = input.model?.id ?? "";
 	const displayName = input.model?.display_name ?? "";
-	const icons = config.icons ?? { opus: "🧠", sonnet: "🎵", haiku: "⚡" };
+	const icons = config.icons ?? { opus: "◆", sonnet: "◆", haiku: "◆" };
 	const showIcon = config.showIcon !== false;
 
 	let icon = "🤖";

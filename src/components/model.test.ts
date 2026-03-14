@@ -37,6 +37,31 @@ describe("parseModelId", () => {
 		expect(result).toEqual({ family: "haiku", version: "3" });
 	});
 
+	test("should parse short alias with minor version", () => {
+		const result = parseModelId("claude-opus-4-6");
+		expect(result).toEqual({ family: "opus", version: "4.6" });
+	});
+
+	test("should parse short alias without minor version", () => {
+		const result = parseModelId("claude-sonnet-4");
+		expect(result).toEqual({ family: "sonnet", version: "4" });
+	});
+
+	test("should strip context window suffix", () => {
+		const result = parseModelId("claude-opus-4-6[1m]");
+		expect(result).toEqual({ family: "opus", version: "4.6" });
+	});
+
+	test("should strip 200k context suffix", () => {
+		const result = parseModelId("claude-sonnet-4-20250514[200k]");
+		expect(result).toEqual({ family: "sonnet", version: "4" });
+	});
+
+	test("should parse short alias for haiku", () => {
+		const result = parseModelId("claude-haiku-4-5");
+		expect(result).toEqual({ family: "haiku", version: "4.5" });
+	});
+
 	test("should return null for unknown format", () => {
 		const result = parseModelId("some-unknown-model");
 		expect(result).toBeNull();
@@ -74,6 +99,12 @@ describe("renderModel", () => {
 			expect(result.text).toContain(theme.green);
 		});
 
+		test("should detect short alias model with version", () => {
+			const result = renderModel(mockInput("claude-opus-4-6", "Claude Opus 4.6"), {}, theme);
+			expect(result.text).toContain("Opus 4.6");
+			expect(result.text).toContain(theme.mauve);
+		});
+
 		test("should fallback to display name for unknown model", () => {
 			const result = renderModel(mockInput("some-unknown-model", "Some New Model"), {}, theme);
 			expect(result.text).toContain("Some New Model");
@@ -81,23 +112,23 @@ describe("renderModel", () => {
 	});
 
 	describe("icon display", () => {
-		test("should show icon by default", () => {
+		test("should show diamond icon by default", () => {
 			const result = renderModel(mockInput("claude-opus-4-5-20251101", "Claude 4 Opus"), {}, theme);
-			expect(result.text).toContain("🧠");
+			expect(result.text).toContain("◆");
 		});
 
-		test("should show sonnet icon", () => {
+		test("should show diamond icon for sonnet", () => {
 			const result = renderModel(
 				mockInput("claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet"),
 				{},
 				theme,
 			);
-			expect(result.text).toContain("🎵");
+			expect(result.text).toContain("◆");
 		});
 
-		test("should show haiku icon", () => {
+		test("should show diamond icon for haiku", () => {
 			const result = renderModel(mockInput("claude-3-haiku-20240307", "Claude 3 Haiku"), {}, theme);
-			expect(result.text).toContain("⚡");
+			expect(result.text).toContain("◆");
 		});
 
 		test("should use custom icons", () => {

@@ -59,6 +59,10 @@ export type McpServer = z.infer<typeof McpServerSchema>;
 export const ComponentOutputSchema = z.object({
 	text: z.string(),
 	action: z.string().optional(),
+	// Optional: header + wrappable items for width-aware rendering.
+	// When present, the CLI wraps items onto new lines instead of truncating.
+	header: z.string().optional(),
+	items: z.array(z.string()).optional(),
 });
 
 export type ComponentOutput = z.infer<typeof ComponentOutputSchema>;
@@ -282,6 +286,8 @@ export interface LineDefinition {
 
 export const PulseConfigSchema = z.object({
 	theme: z.string(),
+	compact: z.boolean().optional(),
+	dividers: z.boolean().optional(),
 	lines: LinesConfigSchema.optional(),
 	components: ComponentConfigsSchema,
 	interactive: z

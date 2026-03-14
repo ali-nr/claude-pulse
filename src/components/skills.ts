@@ -34,7 +34,6 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 		return { text };
 	}
 
-	// Get valid skill names
 	const validNames = summary.skills
 		.filter((s) => s.valid)
 		.map((s) => s.name ?? s.folder)
@@ -42,31 +41,94 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 
 	const brokenNames = summary.skills.filter((s) => !s.valid).map((s) => s.folder);
 
-	// Build display
-	const parts: string[] = [];
+	// Build header: "✦ Skills 42"
+	const countStr = showCount ? ` ${theme.mauve}${summary.valid}${theme.reset}` : "";
+	const header = `${theme.mauve}✦ ${label}${theme.reset}${countStr}`;
 
-	if (showCount) {
-		parts.push(`${theme.mauve}${summary.valid}${theme.reset}`);
-	}
+	// Build items — adaptive based on count
+	const items: string[] = [];
+	const GROUP_THRESHOLD = 10;
+	const MIN_PREFIX_COUNT = 3;
 
 	if (showNames && validNames.length > 0) {
-		const displayNames = validNames.join(",");
-		const overflow = summary.valid > maxDisplay ? `+${summary.valid - maxDisplay}` : "";
-		parts.push(
-			`${theme.flamingo}${displayNames}${overflow ? ` ${theme.overlay0}${overflow}` : ""}${theme.reset}`,
-		);
+		if (validNames.length > GROUP_THRESHOLD) {
+			// Group by prefix for large collections
+			const { groups, ungrouped } = groupByPrefix(validNames, MIN_PREFIX_COUNT);
+			const hasGroups = Object.keys(groups).length > 0;
+
+			if (hasGroups) {
+				// Render prefix groups: "bmad:75"
+				for (const [prefix, names] of Object.entries(groups).sort(
+					(a, b) => b[1].length - a[1].length,
+				)) {
+					items.push(`${theme.overlay1}${prefix}:${theme.peach}${names.length}${theme.reset}`);
+				}
+
+				// Render ungrouped skills as comma-separated
+				if (ungrouped.length > 0) {
+					items.push(`${theme.flamingo}${ungrouped.join(",")}${theme.reset}`);
+				}
+			} else {
+				// No groups — show capped list with overflow
+				const CAP = 10;
+				const capped = validNames.slice(0, CAP);
+				items.push(`${theme.flamingo}${capped.join(",")}${theme.reset}`);
+				if (validNames.length > CAP) {
+					items.push(`${theme.overlay0}+${validNames.length - CAP}${theme.reset}`);
+				}
+			}
+		} else {
+			// List individual names for small collections
+			items.push(`${theme.flamingo}${validNames.join(",")}${theme.reset}`);
+		}
+
+		const overflow = summary.valid > maxDisplay ? summary.valid - maxDisplay : 0;
+		if (overflow > 0) {
+			items.push(`${theme.overlay0}+${overflow}${theme.reset}`);
+		}
 	}
 
-	// Show broken skills
-	let brokenStr = "";
+	// Broken skills as individual items
 	if (summary.broken > 0) {
-		const brokenDisplay =
-			brokenNames.length <= 2 ? brokenNames.join(",") : `${summary.broken} broken`;
-		brokenStr = ` ${theme.red}▲${brokenDisplay}${theme.reset}`;
+		for (const name of brokenNames) {
+			items.push(`${theme.red}▲${name}${theme.reset}`);
+		}
 	}
 
-	const text = `${theme.mauve}✦ ${label}${theme.reset}${parts.length ? ` ${parts.join(" ")}` : ""}${brokenStr}`;
-	return { text };
+	// Flat text for simple rendering
+	const text = items.length > 0 ? `${header} ${items.join(" ")}` : header;
+	return { text, header, items };
+}
+
+/**
+ * Group names by their common prefix (before first `-` or `:`).
+ * Only groups with >= minCount members are grouped; the rest stay ungrouped.
+ */
+export function groupByPrefix(
+	names: string[],
+	minCount: number,
+): { groups: Record<string, string[]>; ungrouped: string[] } {
+	const buckets: Record<string, string[]> = {};
+
+	for (const name of names) {
+		const sep = name.includes(":") ? ":" : "-";
+		const prefix = name.split(sep)[0];
+		if (!buckets[prefix]) buckets[prefix] = [];
+		buckets[prefix].push(name);
+	}
+
+	const groups: Record<string, string[]> = {};
+	const ungrouped: string[] = [];
+
+	for (const [prefix, members] of Object.entries(buckets)) {
+		if (members.length >= minCount) {
+			groups[prefix] = members;
+		} else {
+			ungrouped.push(...members);
+		}
+	}
+
+	return { groups, ungrouped };
 }
 
 function getSkillsSummary(): SkillsSummary {

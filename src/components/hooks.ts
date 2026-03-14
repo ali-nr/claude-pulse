@@ -64,21 +64,35 @@ export function renderHooks(config: HooksConfig, theme: Theme): ComponentOutput 
 		return { text };
 	}
 
-	// Build event type breakdown
-	const eventParts = Object.entries(summary.events).map(([event, detail]) => {
+	// Build header
+	const header = `${theme.yellow}⚡${hookLabel} ${summary.total}${theme.reset}`;
+
+	// Build event type items for wrapping — cap names per group when many hooks
+	const MAX_NAMES_PER_GROUP = 3;
+	const compact = summary.total > 6;
+
+	const items = Object.entries(summary.events).map(([event, detail]) => {
 		const label = EVENT_LABELS[event] ?? event;
-		const goodNames =
-			showNames && detail.names.length > 0
-				? ` ${theme.flamingo}${detail.names.join(",")}${theme.reset}`
-				: "";
-		const brokenNames =
+		const brokenStr =
 			detail.broken.length > 0 ? ` ${theme.red}${detail.broken.join(",")} ▲${theme.reset}` : "";
 		const countStr = showCount ? `${theme.peach}${detail.count}${theme.reset}` : "";
-		return `${theme.lavender}${label}:${theme.reset}${countStr}${goodNames}${brokenNames}`;
+
+		let goodNames = "";
+		if (showNames && detail.names.length > 0) {
+			const cap = compact ? MAX_NAMES_PER_GROUP : detail.names.length;
+			const displayed = detail.names.slice(0, cap);
+			const overflow = detail.names.length - cap;
+			goodNames = ` ${theme.flamingo}${displayed.join(",")}${theme.reset}`;
+			if (overflow > 0) {
+				goodNames += ` ${theme.overlay0}+${overflow}${theme.reset}`;
+			}
+		}
+
+		return `${theme.lavender}${label}:${theme.reset}${countStr}${goodNames}${brokenStr}`;
 	});
 
-	const text = `${theme.yellow}⚡${hookLabel} ${summary.total}${theme.reset} ${eventParts.join(" ")}`;
-	return { text };
+	const text = items.length > 0 ? `${header} ${items.join(" ")}` : header;
+	return { text, header, items };
 }
 
 function getHooksSummary(): HooksSummary {
