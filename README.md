@@ -5,11 +5,11 @@
 
 A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
-**Full mode** — names, groups, token breakdown:
+**Full mode** shows names, groups, and token breakdown:
 
 ![cc-pulse full mode](assets/demo-full.png)
 
-**Compact mode** — counts only, minimal footprint:
+**Compact mode** shows counts only:
 
 ![cc-pulse compact mode](assets/demo-compact.png)
 
@@ -30,66 +30,63 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Restart Claude Code — the statusline appears below the input area.
+Restart Claude Code and the statusline appears below the input area.
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| **Context usage** | Shows % used with color-coded bar — green to red as you approach limits |
+| **Context usage** | Percentage used, colour shifts from green to red as you approach limits |
 | **Token breakdown** | Input, output, and cache tokens at a glance |
-| **Model info** | Shows model with version (e.g., "◆ Opus 4.6", "◆ Sonnet 4") |
-| **Cost tracking** | Session cost with color coding ($1 yellow, $2 orange, $5+ red) |
+| **Model info** | Model family and version, e.g. "Opus 4.6" |
+| **Cost tracking** | Session cost with colour coding |
 | **MCP health** | Live connection status for all MCP servers |
-| **Hook monitoring** | Active hooks by event type, with broken path detection |
-| **Skills display** | Adaptive display — individual names, prefix grouping, or compact counts |
-| **Git status** | Branch name + new/modified/deleted file counts |
-| **Responsive layout** | Width-aware wrapping + compact mode for smaller screens |
+| **Hook monitoring** | Active hooks by event type with broken path detection |
+| **Skills display** | Adapts automatically: individual names, prefix grouping, or counts only |
+| **Git status** | Branch name and file change counts |
+| **Responsive layout** | Width-aware wrapping and a compact mode for smaller screens |
 
 ## What You Get
 
 | Line | Content |
 |------|---------|
-| **Identity** | Project name + working directory |
-| **Git** | Branch + file changes (new, modified, deleted) |
-| **Engine** | Model, context used, tokens, cost, duration |
-| **MCP** | Server count + individual status (✓ connected, ✗ disconnected, ○ disabled) |
-| **Hooks** | Hook count by event type, with broken path warnings |
-| **Skills** | Adaptive: names when few, prefix groups when many |
+| **Identity** | Project name and working directory |
+| **Git** | Branch and file changes (new, modified, deleted) |
+| **Engine** | Model, context usage, tokens, cost, session duration |
+| **MCP** | Server count and individual status |
+| **Hooks** | Hook count by event type with broken path warnings |
+| **Skills** | Names when few, prefix groups when many |
 
 ## Responsive Display
 
-The statusline adapts to your setup automatically:
+The statusline adapts to your setup automatically.
 
-**Skills** — adapts based on count:
-- **10 or fewer**: lists all names — `✦ Skills 5 beads,excalidraw,mermaid,tmux,repomix`
-- **More than 10 with shared prefixes**: groups them — `✦ Skills 89 bmad:77 beads,excalidraw,mermaid,...`
-- **More than 10, no groups**: caps at 10 names with overflow — `✦ Skills 15 a,b,c,d,e,f,g,h,i,j +5`
+**Skills** adapt based on count:
+- 10 or fewer: lists all names, e.g. `✦ Skills 5 beads,excalidraw,mermaid,tmux,repomix`
+- More than 10 with shared prefixes: groups them, e.g. `✦ Skills 89 bmad:77 beads,excalidraw,...`
+- More than 10 without groups: caps at 10 names with overflow, e.g. `✦ Skills 15 a,b,c,... +5`
 
-**Hooks** — adapts based on total count:
-- **6 or fewer**: shows all names per event — `⚡Hooks 4 Submit:2 lint,format Post:2 test,deploy`
-- **More than 6**: caps names to 3 per group — `⚡Hooks 12 Submit:5 lint,format,check +2`
+**Hooks** adapt based on total count:
+- 6 or fewer: shows all names per event, e.g. `⚡Hooks 4 Submit:2 lint,format Post:2 test,deploy`
+- More than 6: caps names to 3 per group, e.g. `⚡Hooks 12 Submit:5 lint,format,check +2`
 
-**Width-aware wrapping** — when a line exceeds terminal width, components wrap onto indented continuation lines instead of being cut off.
+**Width-aware wrapping** breaks long lines at component boundaries instead of cutting them off.
 
-**Compact mode** — toggle with `/pulse-compact` or set in config:
+**Compact mode** collapses everything to counts only. Toggle with `/pulse-compact` or set in config:
 ```json
 {
   "compact": true
 }
 ```
 
-In compact mode, everything collapses to counts only:
-- `⬢ MCP 3/4` | `⚡Hooks 8` | `✦ Skills 89` | `Used 30%` | `$2.50`
-
 ## Configuration
 
-Create `~/.config/claude-pulse/config.json` to customize. Only include what you want to change.
+Create `~/.config/claude-pulse/config.json` to customise. Only include what you want to change.
 
 <details>
 <summary><strong>Compact Mode</strong></summary>
 
-Minimal display showing only counts and essential info. Toggle with the `/pulse-compact` slash command, or set manually:
+Minimal display with counts and essential info only. Toggle with `/pulse-compact` or set manually:
 
 ```json
 {
@@ -97,14 +94,14 @@ Minimal display showing only counts and essential info. Toggle with the `/pulse-
 }
 ```
 
-When enabled: skills, hooks, and MCP show counts only; context hides token breakdown; cost hides burn rate; CWD shortens.
+Skills, hooks, and MCP show counts only. Context hides the token breakdown. Cost hides burn rate. CWD shortens.
 
 </details>
 
 <details>
 <summary><strong>Context Window</strong></summary>
 
-Shows how much of the context window is used. Colors shift as usage increases.
+Shows how much of the context window is used. Colours shift as usage increases.
 
 ```json
 {
@@ -125,11 +122,7 @@ Shows how much of the context window is used. Colors shift as usage increases.
 | `detailed` | `Used 116.0k/200.0k (58%)` |
 | `both` | `●●●●●●○○○○ 116.0k / 200.0k` |
 
-**Color thresholds** — as used % increases:
-- **Green**: < 70% used (safe)
-- **Yellow**: 70% used (warn)
-- **Orange**: 85% used (critical)
-- **Red**: 95% used (danger)
+Colour thresholds: green below 70%, yellow at 70%, orange at 85%, red at 95%.
 
 </details>
 
@@ -150,14 +143,14 @@ Shows how much of the context window is used. Colors shift as usage increases.
 
 | Option | Effect |
 |--------|--------|
-| `showNames: true` | List each server with status |
-| `showOnlyProblems: true` | Hide line when all servers healthy |
-| `maxDisplay: 4` | Limit servers shown ("+N more" for rest) |
+| `showNames: true` | List each server with its status |
+| `showOnlyProblems: true` | Hide the line when all servers are healthy |
+| `maxDisplay: 4` | Limit servers shown, with "+N more" for the rest |
 
 | Icon | Status |
 |------|--------|
 | ✓ | Connected |
-| ✗ | Disconnected (red) |
+| ✗ | Disconnected |
 | ○ | Disabled |
 | ▲ | Error |
 
@@ -183,7 +176,7 @@ Shows how much of the context window is used. Colors shift as usage increases.
 | `showNames: false` | `⚡Hooks 8 Submit:3 Post:2 End:1` |
 | Both `false` | `⚡Hooks 8` |
 
-When you have many hooks (>6), names are automatically capped to 3 per event group with a `+N` overflow indicator.
+With more than 6 hooks, names are capped to 3 per event group with a `+N` overflow count.
 
 Broken hooks (invalid paths) show in red with ▲.
 
@@ -203,7 +196,7 @@ Broken hooks (invalid paths) show in red with ▲.
 }
 ```
 
-Color thresholds: green < $1, yellow $1-$2, orange $2-$5, red > $5
+Colour thresholds: green below $1, yellow $1 to $2, orange $2 to $5, red above $5.
 
 </details>
 
@@ -224,9 +217,37 @@ Shows your custom slash commands from `~/.claude/skills/` and `.claude/skills/`.
 }
 ```
 
-The display adapts automatically based on how many skills you have — see [Responsive Display](#responsive-display) above.
+The display adapts automatically based on how many skills you have. See [Responsive Display](#responsive-display) above.
 
 Broken skills (missing SKILL.md or invalid frontmatter) show in red with ▲.
+
+</details>
+
+<details>
+<summary><strong>CWD (Working Directory)</strong></summary>
+
+Control how the current directory is displayed:
+
+```json
+{
+  "components": {
+    "cwd": {
+      "style": "short",
+      "maxLength": 30,
+      "showIcon": true
+    }
+  }
+}
+```
+
+| Style | Example |
+|-------|---------|
+| `short` (default) | `~/…/fix-1612` |
+| `full` | `/home/user/.worktree/my-project/2026-02-13/fix-1612` |
+| `basename` | `fix-1612` |
+| `project` | Project folder name |
+
+Increase `maxLength` to show more of the path, or use `basename` if you only care about the folder name.
 
 </details>
 
@@ -261,7 +282,7 @@ The 6-line structure is fixed. You can toggle lines and change separators:
 
 | Line | Key | Toggleable |
 |------|-----|------------|
-| Identity | — | No (branding) |
+| Identity | n/a | No |
 | Git | `git` | Yes |
 | Engine | `engine` | Yes |
 | MCP | `mcp` | Yes |
@@ -293,7 +314,7 @@ cc-pulse ships with a skill you can install to your Claude Code skills directory
 |---------|-------------|
 | `/pulse-compact` | Toggle compact mode on/off |
 
-To install, copy `skills/pulse-compact/` to `~/.claude/skills/` or your project's `.claude/skills/`.
+Copy `skills/pulse-compact/` to `~/.claude/skills/` or your project's `.claude/skills/`.
 
 ## Development
 
@@ -305,7 +326,7 @@ bun run build
 bun test
 ```
 
-Use full path in settings: `"command": "node /path/to/claude-pulse/dist/cli.js"`
+For local testing, use the full path in settings: `"command": "node /path/to/claude-pulse/dist/cli.js"`
 
 ## License
 
