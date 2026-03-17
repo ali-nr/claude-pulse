@@ -62,10 +62,7 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 	}
 
 	// Build server status string with count
-	const displayServers = servers.slice(0, maxDisplay);
-	const remaining = servers.length - maxDisplay;
-
-	const serverItems = displayServers.map((server) => {
+	const serverItems = servers.map((server) => {
 		let icon: string;
 		let color: string;
 
@@ -89,10 +86,6 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 
 		return `${color}${server.name} ${icon}${theme.reset}`;
 	});
-
-	if (remaining > 0) {
-		serverItems.push(`${theme.sky}+${remaining} more${theme.reset}`);
-	}
 
 	// Show count in label
 	const countStr = `${connectedCount}/${servers.length}`;
