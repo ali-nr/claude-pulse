@@ -62,15 +62,15 @@ Restart Claude Code and the statusline appears below the input area.
 The statusline adapts to your setup automatically.
 
 **Skills** adapt based on count:
-- 10 or fewer: lists all names, e.g. `✦ Skills 5 beads,excalidraw,mermaid,tmux,repomix`
-- More than 10 with shared prefixes: groups them, e.g. `✦ Skills 89 bmad:77 beads,excalidraw,...`
-- More than 10 without groups: caps at 10 names with overflow, e.g. `✦ Skills 15 a,b,c,... +5`
+- 10 or fewer: lists all names, e.g. `✦ Skills 5 beads excalidraw mermaid tmux repomix`
+- More than 10 with shared prefixes: groups them, e.g. `✦ Skills 89 bmad:77 beads excalidraw ...`
+- More than 10 without groups: caps at 10 names with overflow, e.g. `✦ Skills 15 a b c ... +5`
 
 **Hooks** adapt based on total count:
 - 6 or fewer: shows all names per event, e.g. `⚡Hooks 4 Submit:2 lint,format Post:2 test,deploy`
 - More than 6: caps names to 3 per group, e.g. `⚡Hooks 12 Submit:5 lint,format,check +2`
 
-**Width-aware wrapping** breaks long lines at component boundaries instead of cutting them off.
+**Width-aware wrapping** breaks long lines at component boundaries instead of cutting them off. Items wrap at 5 per line for readability.
 
 **Compact mode** collapses everything to counts only. Toggle with `/pulse-compact` or set in config:
 ```json
@@ -254,7 +254,7 @@ Increase `maxLength` to show more of the path, or use `basename` if you only car
 <details>
 <summary><strong>Dividers</strong></summary>
 
-Add horizontal line separators between status sections:
+Add horizontal line separators between all status sections:
 
 ```json
 {
@@ -263,6 +263,19 @@ Add horizontal line separators between status sections:
 ```
 
 Off by default.
+
+</details>
+
+<details>
+<summary><strong>Section Separators</strong></summary>
+
+Add light `---` separators after MCP, hooks, and skills sections. On by default in full mode, hidden in compact mode.
+
+```json
+{
+  "sectionSeparators": false
+}
+```
 
 </details>
 

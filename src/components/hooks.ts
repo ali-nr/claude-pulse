@@ -71,25 +71,27 @@ export function renderHooks(config: HooksConfig, theme: Theme): ComponentOutput 
 	const MAX_NAMES_PER_GROUP = 3;
 	const compact = summary.total > 6;
 
-	const items = Object.entries(summary.events).map(([event, detail]) => {
+	const items: string[] = [];
+	for (const [event, detail] of Object.entries(summary.events)) {
 		const label = EVENT_LABELS[event] ?? event;
-		const brokenStr =
-			detail.broken.length > 0 ? ` ${theme.red}${detail.broken.join(",")} ▲${theme.reset}` : "";
 		const countStr = showCount ? `${theme.peach}${detail.count}${theme.reset}` : "";
+		const eventTag = `${theme.lavender}${label}:${theme.reset}${countStr}`;
 
-		let goodNames = "";
 		if (showNames && detail.names.length > 0) {
 			const cap = compact ? MAX_NAMES_PER_GROUP : detail.names.length;
 			const displayed = detail.names.slice(0, cap);
 			const overflow = detail.names.length - cap;
-			goodNames = ` ${theme.flamingo}${displayed.join(",")}${theme.reset}`;
-			if (overflow > 0) {
-				goodNames += ` ${theme.overlay0}+${overflow}${theme.reset}`;
-			}
+			const nameStr = `${theme.flamingo}${displayed.join(",")}${theme.reset}`;
+			const overflowStr = overflow > 0 ? ` ${theme.overlay0}+${overflow}${theme.reset}` : "";
+			items.push(`${eventTag} ${nameStr}${overflowStr}`);
+		} else {
+			items.push(eventTag);
 		}
 
-		return `${theme.lavender}${label}:${theme.reset}${countStr}${goodNames}${brokenStr}`;
-	});
+		if (detail.broken.length > 0) {
+			items.push(`${theme.red}${detail.broken.join(",")} ▲${theme.reset}`);
+		}
+	}
 
 	const text = items.length > 0 ? `${header} ${items.join(" ")}` : header;
 	return { text, header, items };
@@ -121,10 +123,13 @@ export function extractHookInfo(command: string): { name: string; broken: boolea
 	// Find the first token that looks like a file path
 	for (const part of parts) {
 		if (part.includes("/")) {
-			const base = part.split("/").pop() ?? part;
+			// Strip surrounding quotes and expand $ENV_VAR references
+			const cleaned = part.replace(/^["']|["']$/g, "");
+			const expanded = cleaned.replace(/\$(\w+)/g, (_, v) => process.env[v] ?? `$${v}`);
+			const base = expanded.split("/").pop() ?? expanded;
 			const name = base.replace(/\.[^.]+$/, "");
 			// Validate the file path exists
-			const broken = !existsSync(part);
+			const broken = !existsSync(expanded);
 			return { name, broken };
 		}
 	}

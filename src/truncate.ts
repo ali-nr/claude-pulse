@@ -25,6 +25,7 @@ export function wrapParts(
 	separator: string,
 	maxWidth: number,
 	indent = 2,
+	maxPerLine = 0,
 ): string {
 	if (parts.length === 0) return "";
 
@@ -33,18 +34,22 @@ export function wrapParts(
 	const lines: string[] = [];
 	let currentLine = parts[0];
 	let currentWidth = visibleLength(parts[0]);
+	let partsOnLine = 1;
 
 	for (let i = 1; i < parts.length; i++) {
 		const partWidth = visibleLength(parts[i]);
 		const wouldBe = currentWidth + sepWidth + partWidth;
+		const hitMax = maxPerLine > 0 && partsOnLine >= maxPerLine;
 
-		if (wouldBe > maxWidth) {
+		if (wouldBe > maxWidth || hitMax) {
 			lines.push(currentLine);
 			currentLine = pad + parts[i];
 			currentWidth = indent + partWidth;
+			partsOnLine = 1;
 		} else {
 			currentLine += separator + parts[i];
 			currentWidth = wouldBe;
+			partsOnLine++;
 		}
 	}
 

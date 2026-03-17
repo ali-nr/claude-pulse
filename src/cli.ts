@@ -117,12 +117,21 @@ Configuration:
 		// For lines with a single component that has header+items, wrap items
 		if (outputs.length === 1 && outputs[0].header && outputs[0].items?.length) {
 			const { header, items } = outputs[0];
-			const rendered = wrapParts([header, ...items], " ", termWidth);
+			const rendered = wrapParts([header, ...items], " ", termWidth, 2, 4);
 			outputLines.push(rendered);
 		} else {
 			// Standard: wrap at component boundaries
 			const parts = outputs.map((o) => o.text);
 			outputLines.push(wrapParts(parts, sep, termWidth));
+		}
+
+		// Insert separator after MCP, hooks, and skills sections
+		if (
+			!config.compact &&
+			config.sectionSeparators !== false &&
+			(line.name === "mcp" || line.name === "hooks" || line.name === "skills")
+		) {
+			outputLines.push(`${theme.overlay0}---${theme.reset}`);
 		}
 	}
 

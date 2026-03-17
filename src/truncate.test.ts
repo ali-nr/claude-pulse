@@ -84,4 +84,47 @@ describe("wrapParts", () => {
 			expect(lines[i].startsWith("  ")).toBe(true);
 		}
 	});
+
+	test("should wrap after maxPerLine parts even if width allows more", () => {
+		// All parts fit on one line at width 80, but maxPerLine=4 forces a wrap
+		const result = wrapParts(["hdr", "a", "b", "c", "d", "e", "f"], " ", 80, 2, 4);
+		const lines = result.split("\n");
+		expect(lines).toEqual(["hdr a b c", "  d e f"]);
+	});
+
+	test("should not wrap when maxPerLine is 0 (disabled)", () => {
+		const result = wrapParts(["hdr", "a", "b", "c", "d", "e"], " ", 80, 2, 0);
+		expect(result).toBe("hdr a b c d e");
+	});
+
+	describe("hooks/skills wrapping (maxPerLine=4)", () => {
+		// Simulates cli.ts: wrapParts([header, ...items], " ", termWidth, 2, 4)
+		// header counts as part 1, so 3 items fit on the first line
+
+		test("should show header + 3 items on first line", () => {
+			const header = "⚡Hooks 8";
+			const items = ["Pre:2", "Post:1", "Start:1", "Submit:2", "Stop:1", "End:1"];
+			const result = wrapParts([header, ...items], " ", 200, 2, 4);
+			const lines = result.split("\n");
+			expect(lines[0]).toBe("⚡Hooks 8 Pre:2 Post:1 Start:1");
+			expect(lines[1]).toBe("  Submit:2 Stop:1 End:1");
+		});
+
+		test("should not wrap when 3 or fewer items", () => {
+			const header = "⚡Hooks 3";
+			const items = ["Pre:1", "Post:1", "Start:1"];
+			const result = wrapParts([header, ...items], " ", 200, 2, 4);
+			expect(result).not.toContain("\n");
+		});
+
+		test("should wrap skills groups across lines", () => {
+			const header = "✦ Skills 42";
+			const items = ["bmad:30", "agent-vibes:8", "beads", "tmux", "mermaid", "commit", "pr"];
+			const result = wrapParts([header, ...items], " ", 200, 2, 4);
+			const lines = result.split("\n");
+			expect(lines).toHaveLength(2);
+			expect(lines[0]).toBe("✦ Skills 42 bmad:30 agent-vibes:8 beads");
+			expect(lines[1]).toBe("  tmux mermaid commit pr");
+		});
+	});
 });

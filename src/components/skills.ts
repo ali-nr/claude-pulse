@@ -64,22 +64,26 @@ export function renderSkills(config: SkillsConfig, theme: Theme): ComponentOutpu
 					items.push(`${theme.overlay1}${prefix}:${theme.peach}${names.length}${theme.reset}`);
 				}
 
-				// Render ungrouped skills as comma-separated
-				if (ungrouped.length > 0) {
-					items.push(`${theme.flamingo}${ungrouped.join(",")}${theme.reset}`);
+				// Render ungrouped skills individually
+				for (const name of ungrouped) {
+					items.push(`${theme.flamingo}${name}${theme.reset}`);
 				}
 			} else {
 				// No groups — show capped list with overflow
 				const CAP = 10;
 				const capped = validNames.slice(0, CAP);
-				items.push(`${theme.flamingo}${capped.join(",")}${theme.reset}`);
+				for (const name of capped) {
+					items.push(`${theme.flamingo}${name}${theme.reset}`);
+				}
 				if (validNames.length > CAP) {
 					items.push(`${theme.overlay0}+${validNames.length - CAP}${theme.reset}`);
 				}
 			}
 		} else {
 			// List individual names for small collections
-			items.push(`${theme.flamingo}${validNames.join(",")}${theme.reset}`);
+			for (const name of validNames) {
+				items.push(`${theme.flamingo}${name}${theme.reset}`);
+			}
 		}
 
 		const overflow = summary.valid > maxDisplay ? summary.valid - maxDisplay : 0;

@@ -136,6 +136,7 @@ function mergeConfig(target: PulseConfig, source: Partial<PulseConfig>): PulseCo
 	if (source.theme !== undefined) result.theme = source.theme;
 	if (source.compact !== undefined) result.compact = source.compact;
 	if (source.dividers !== undefined) result.dividers = source.dividers;
+	if (source.sectionSeparators !== undefined) result.sectionSeparators = source.sectionSeparators;
 	if (source.lines !== undefined) result.lines = source.lines;
 	if (source.interactive !== undefined) result.interactive = source.interactive;
 	if (source.reactive !== undefined) result.reactive = source.reactive;

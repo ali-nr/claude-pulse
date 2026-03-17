@@ -288,6 +288,7 @@ export const PulseConfigSchema = z.object({
 	theme: z.string(),
 	compact: z.boolean().optional(),
 	dividers: z.boolean().optional(),
+	sectionSeparators: z.boolean().optional(),
 	lines: LinesConfigSchema.optional(),
 	components: ComponentConfigsSchema,
 	interactive: z

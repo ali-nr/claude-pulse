@@ -1,6 +1,6 @@
 {
 	"name": "cc-pulse",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "A customizable, real-time statusline for Claude Code",
 	"type": "module",
 	"bin": {
