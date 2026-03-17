@@ -6,7 +6,7 @@ import type { ComponentOutput, McpConfig, McpServer } from "../schema";
 import { loadState, saveState } from "../state";
 import type { Theme } from "../themes/catppuccin";
 
-const CACHE_TTL = 30000; // 30 seconds — claude mcp list does health checks, don't call too often
+const CACHE_TTL = 10000; // 10 seconds
 
 export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 	if (config.enabled === false) {
@@ -123,7 +123,7 @@ function getMcpServers(): McpServer[] {
 		try {
 			const output = execSync("claude mcp list", {
 				encoding: "utf-8",
-				timeout: 3000,
+				timeout: 8000,
 				stdio: ["pipe", "pipe", "ignore"],
 			});
 

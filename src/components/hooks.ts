@@ -107,6 +107,11 @@ function getHooksSummary(): HooksSummary {
 	const projectPath = join(process.cwd(), ".claude", "settings.json");
 	mergeHooksFromFile(projectPath, events);
 
+	// Remove events with zero hooks (e.g. empty arrays in config)
+	for (const [key, detail] of Object.entries(events)) {
+		if (detail.count === 0) delete events[key];
+	}
+
 	let totalBroken = 0;
 	for (const detail of Object.values(events)) {
 		total += detail.count;
@@ -124,8 +129,20 @@ export function extractHookInfo(command: string): { name: string; broken: boolea
 	for (const part of parts) {
 		if (part.includes("/")) {
 			// Strip surrounding quotes and expand $ENV_VAR references
-			const cleaned = part.replace(/^["']|["']$/g, "");
-			const expanded = cleaned.replace(/\$(\w+)/g, (_, v) => process.env[v] ?? `$${v}`);
+			const cleaned = part.replace(/["']/g, "");
+			let expanded = cleaned.replace(/\$(\w+)/g, (_, v) => {
+				if (v === "CLAUDE_PROJECT_DIR") return process.env[v] ?? process.cwd();
+				return process.env[v] ?? `$${v}`;
+			});
+			// Expand ~ to home directory (shell does this, but Node doesn't)
+			if (expanded.startsWith("~/")) {
+				expanded = join(homedir(), expanded.slice(2));
+			}
+			// Resolve relative paths against project dir
+			if (!expanded.startsWith("/")) {
+				const projectDir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
+				expanded = join(projectDir, expanded);
+			}
 			const base = expanded.split("/").pop() ?? expanded;
 			const name = base.replace(/\.[^.]+$/, "");
 			// Validate the file path exists
