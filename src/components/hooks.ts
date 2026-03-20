@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ComponentOutput, HooksConfig } from "../schema";
 import type { Theme } from "../themes/catppuccin";
+import { getProjectRoot } from "../utils";
 
 interface HookEntry {
 	type: string;
@@ -104,8 +105,12 @@ function getHooksSummary(): HooksSummary {
 	const globalPath = join(homedir(), ".claude", "settings.json");
 	mergeHooksFromFile(globalPath, events);
 
-	const projectPath = join(process.cwd(), ".claude", "settings.json");
+	const projectRoot = getProjectRoot() ?? process.cwd();
+	const projectPath = join(projectRoot, ".claude", "settings.json");
 	mergeHooksFromFile(projectPath, events);
+
+	const localPath = join(projectRoot, ".claude", "settings.local.json");
+	mergeHooksFromFile(localPath, events);
 
 	// Remove events with zero hooks (e.g. empty arrays in config)
 	for (const [key, detail] of Object.entries(events)) {

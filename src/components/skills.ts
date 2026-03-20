@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ComponentOutput, SkillsConfig } from "../schema";
 import type { Theme } from "../themes/catppuccin";
+import { getProjectRoot } from "../utils";
 
 interface SkillInfo {
 	folder: string;
@@ -143,7 +144,8 @@ function getSkillsSummary(): SkillsSummary {
 	scanSkillsDirectory(userSkillsPath, skills);
 
 	// Scan project-level skills
-	const projectSkillsPath = join(process.cwd(), ".claude", "skills");
+	const projectRoot = getProjectRoot() ?? process.cwd();
+	const projectSkillsPath = join(projectRoot, ".claude", "skills");
 	scanSkillsDirectory(projectSkillsPath, skills);
 
 	// Deduplicate by folder name (project overrides user)
