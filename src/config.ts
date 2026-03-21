@@ -58,7 +58,6 @@ export const DEFAULT_CONFIG: PulseConfig = {
 			showOnlyProblems: false,
 			style: "auto",
 			icons: { connected: "✓", disconnected: "✗", disabled: "○", error: "!" },
-			maxDisplay: 4,
 		},
 		branch: {
 			enabled: true,

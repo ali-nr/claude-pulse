@@ -145,7 +145,6 @@ export const McpConfigSchema = z.object({
 			error: z.string(),
 		})
 		.optional(),
-	maxDisplay: z.number().optional(),
 	showOnlyProblems: z.boolean().optional(),
 });
 

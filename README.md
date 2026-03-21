@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/cc-pulse)](https://www.npmjs.com/package/cc-pulse)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A real-time statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+See your context usage, cost, MCP health, hooks, skills, and git status — all without leaving [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
 **Full mode** shows names, groups, and token breakdown:
 
@@ -145,7 +145,6 @@ Colour thresholds: green below 70%, yellow at 70%, orange at 85%, red at 95%.
 |--------|--------|
 | `showNames: true` | List each server with its status |
 | `showOnlyProblems: true` | Hide the line when all servers are healthy |
-| `maxDisplay: 4` | Limit servers shown, with "+N more" for the rest |
 
 | Icon | Status |
 |------|--------|

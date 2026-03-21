@@ -20,8 +20,6 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		disabled: "○",
 		error: "▲",
 	};
-	const maxDisplay = config.maxDisplay ?? 4;
-
 	const servers = getMcpServers();
 	const connectedCount = servers.filter((s) => s.status === "connected").length;
 	const showOnlyProblems = config.showOnlyProblems ?? false;
