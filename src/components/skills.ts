@@ -176,6 +176,8 @@ function scanSkillsDirectory(dirPath: string, skills: SkillInfo[]): void {
 		const entries = readdirSync(dirPath, { withFileTypes: true });
 		for (const entry of entries) {
 			if (!entry.isDirectory()) continue;
+			// Only consider folders that contain a SKILL.md file
+			if (!existsSync(join(dirPath, entry.name, "SKILL.md"))) continue;
 			const skillInfo = validateSkill(dirPath, entry.name);
 			skills.push(skillInfo);
 		}
