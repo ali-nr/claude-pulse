@@ -40,6 +40,15 @@ describe("parseMcpOutput", () => {
 			expect(servers[0].status).toBe("error");
 		});
 
+		test("should parse pending approval server", () => {
+			const output =
+				"atlassian-api: uvx mcp-atlassian - ⏸ Pending approval (run `claude` to approve)";
+			const servers = parseMcpOutput(output);
+			expect(servers).toHaveLength(1);
+			expect(servers[0].name).toBe("atlassian-api");
+			expect(servers[0].status).toBe("pending");
+		});
+
 		test("should parse multiple servers", () => {
 			const output = [
 				"context7: npx -y @upstash/context7-mcp - ✓ Connected",

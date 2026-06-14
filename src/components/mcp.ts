@@ -19,7 +19,9 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 		disconnected: "✗",
 		disabled: "○",
 		error: "▲",
+		pending: "⏸",
 	};
+	const pendingIcon = icons.pending ?? "⏸";
 	const servers = getMcpServers();
 	const connectedCount = servers.filter((s) => s.status === "connected").length;
 	const showOnlyProblems = config.showOnlyProblems ?? false;
@@ -27,7 +29,11 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 	// Conditional visibility: hide when all servers are healthy
 	if (showOnlyProblems) {
 		const problemServers = servers.filter(
-			(s) => s.status === "disconnected" || s.status === "error" || s.status === "disabled",
+			(s) =>
+				s.status === "disconnected" ||
+				s.status === "error" ||
+				s.status === "disabled" ||
+				s.status === "pending",
 		);
 
 		if (problemServers.length === 0) {
@@ -43,6 +49,9 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 			} else if (server.status === "disconnected") {
 				icon = icons.disconnected;
 				serverColor = theme.red;
+			} else if (server.status === "pending") {
+				icon = pendingIcon;
+				serverColor = theme.overlay0;
 			} else {
 				icon = icons.error;
 				serverColor = theme.yellow;
@@ -75,6 +84,10 @@ export function renderMcp(config: McpConfig, theme: Theme): ComponentOutput {
 				break;
 			case "disabled":
 				icon = icons.disabled;
+				color = theme.overlay0;
+				break;
+			case "pending":
+				icon = pendingIcon;
 				color = theme.overlay0;
 				break;
 			default:
@@ -196,7 +209,8 @@ export function parseMcpOutput(output: string): McpServer[] {
 	for (const line of lines) {
 		// Format: "context7: npx -y @upstash/context7-mcp - ✓ Connected"
 		// Also:   "chrome-devtools: npx -y ... - ✗ Failed to connect"
-		const match = line.match(/^(\S+):\s+(.+?)\s+-\s+([✓✔✗✘○◯!⚠])\s*(.+)?/);
+		// Also:   "atlassian: uvx mcp-atlassian - ⏸ Pending approval"
+		const match = line.match(/^(\S+):\s+(.+?)\s+-\s+([✓✔✗✘○◯!⚠⏸⏳])\s*(.+)?/);
 
 		if (match) {
 			const [, name, command, icon, statusText] = match;
@@ -206,6 +220,8 @@ export function parseMcpOutput(output: string): McpServer[] {
 				status = "connected";
 			} else if (icon === "○" || icon === "◯") {
 				status = "disabled";
+			} else if (icon === "⏸" || icon === "⏳") {
+				status = "pending";
 			} else {
 				// ✗, ✘, !, ⚠ — any non-success icon means a problem
 				// Covers: "Disconnected", "Failed to connect", "Error", etc.

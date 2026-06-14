@@ -48,7 +48,7 @@ export type ClaudeStatusInput = z.infer<typeof ClaudeStatusInputSchema>;
 // MCP server schema
 export const McpServerSchema = z.object({
 	name: z.string(),
-	status: z.enum(["connected", "disconnected", "disabled", "error"]),
+	status: z.enum(["connected", "disconnected", "disabled", "error", "pending"]),
 	transport: z.string().optional(),
 	command: z.string().optional(),
 });
@@ -143,6 +143,7 @@ export const McpConfigSchema = z.object({
 			disconnected: z.string(),
 			disabled: z.string(),
 			error: z.string(),
+			pending: z.string().optional(),
 		})
 		.optional(),
 	showOnlyProblems: z.boolean().optional(),
